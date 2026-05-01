@@ -915,7 +915,7 @@ function closeModal(){document.getElementById('runModal').classList.remove('visi
 function renderRoster(){
   document.getElementById('rosterGrid').innerHTML=ROSTER.map(m=>{
     const ini=m.name.split(' ').map(n=>n[0]).join('').slice(0,2);
-    return `<div class="roster-card"><div class="roster-avatar">${ini}</div><div><div class="roster-name">${m.name}</div><div class="roster-phone"><a href="tel:${m.phone}" style="color:var(--text-muted);text-decoration:none;">${m.phone}</a></div></div></div>`;
+    return `<div class="roster-card"><div class="roster-avatar">${ini}</div><div><div class="roster-name">${m.name}</div><div 
   }).join('');
 }
 
