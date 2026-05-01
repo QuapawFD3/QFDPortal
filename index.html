@@ -182,7 +182,138 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
 .toast.visible{display:block;animation:toastIn .3s ease;}
 @keyframes toastIn{from{transform:translateY(10px);opacity:0;}to{transform:translateY(0);opacity:1;}}
 
+/* SCBA MODULE */
+.scba-tab-nav{display:flex;gap:2px;margin-bottom:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:4px;flex-wrap:wrap;}
+.scba-tab-btn{padding:7px 16px;border:none;background:none;color:var(--text-muted);font-family:'Barlow',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border-radius:4px;transition:all .2s;}
+.scba-tab-btn:hover{color:var(--text);}
+.scba-tab-btn.active{background:var(--green);color:#fff;}
+.scba-summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.scba-stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center;}
+.scba-stat-val{font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;line-height:1;margin-bottom:3px;}
+.scba-stat-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);}
+.scba-stat.s-ok .scba-stat-val{color:var(--green);}
+.scba-stat.s-warn .scba-stat-val{color:var(--amber);}
+.scba-stat.s-bad .scba-stat-val{color:var(--red);}
+.scba-stat.s-blue .scba-stat-val{color:var(--blue);}
+.scba-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:16px;}
+.scba-table{width:100%;border-collapse:collapse;}
+.scba-table th{font-family:'Oswald',sans-serif;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);padding:10px 14px;text-align:left;border-bottom:2px solid var(--border);background:var(--surface2);}
+.scba-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+.scba-table tr:last-child td{border-bottom:none;}
+.scba-table tr:hover td{background:var(--surface2);}
+.scba-id{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;color:var(--text);}
+.scba-badge{display:inline-block;padding:2px 7px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.scba-badge-ok{background:rgba(22,163,74,.2);color:#4ade80;border:1px solid rgba(22,163,74,.3);}
+.scba-badge-warn{background:rgba(245,158,11,.2);color:#fbbf24;border:1px solid rgba(245,158,11,.3);}
+.scba-badge-due{background:rgba(220,38,38,.2);color:#f87171;border:1px solid rgba(220,38,38,.3);}
+.scba-badge-oos{background:rgba(139,148,158,.1);color:var(--text-dim);border:1px solid var(--border);}
+.scba-progress{width:80px;background:var(--surface2);border-radius:3px;height:8px;overflow:hidden;display:inline-block;vertical-align:middle;}
+.scba-progress-fill{height:100%;border-radius:3px;transition:width .4s;}
+.scba-action-row{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap;align-items:center;}
+.scba-add-btn{padding:7px 16px;background:var(--green);border:none;border-radius:var(--radius);color:#fff;font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;cursor:pointer;}
+.scba-add-btn:hover{background:#15803d;}
+.scba-filter-btn{padding:5px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text-muted);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;}
+.scba-filter-btn:hover{border-color:var(--text-muted);}
+.scba-filter-btn.active{border-color:var(--green);color:var(--text);background:rgba(22,163,74,.1);}
+.scba-search{margin-left:auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;padding:6px 12px;width:180px;}
+.scba-search:focus{outline:none;border-color:var(--green);}
+.scba-insp-section{margin-bottom:20px;}
+.scba-insp-title{font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.scba-checklist-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);}
+.scba-checklist-item:last-child{border-bottom:none;}
+.scba-check-label{flex:1;font-size:13px;}
+.scba-check-note{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.scba-btn-group{display:flex;gap:4px;}
+.scba-btn-group button{padding:4px 10px;border:1px solid var(--border);border-radius:3px;background:var(--surface2);color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600;cursor:pointer;transition:all .15s;}
+.scba-btn-group button.pass{background:rgba(22,163,74,.2);color:#4ade80;border-color:rgba(22,163,74,.4);}
+.scba-btn-group button.fail{background:rgba(220,38,38,.2);color:#f87171;border-color:rgba(220,38,38,.4);}
+.scba-btn-group button.na{background:rgba(139,148,158,.1);color:var(--text-dim);border-color:var(--border);}
+.scba-note-input{margin-top:5px;width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:3px;color:var(--text);font-family:'Barlow',sans-serif;font-size:12px;padding:5px 8px;}
+/* SCBA modal */
+.scba-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;align-items:center;justify-content:center;padding:24px;display:none;}
+.scba-modal-overlay.visible{display:flex;}
+.scba-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);max-width:620px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow);}
+.scba-modal-header{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);z-index:1;}
+.scba-modal-body{padding:20px 22px;}
+.scba-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+.scba-form-field{display:flex;flex-direction:column;gap:4px;}
+.scba-form-field.full{grid-column:1/-1;}
+.scba-form-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);}
+.scba-form-input,.scba-form-select{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;padding:8px 12px;}
+.scba-form-input:focus,.scba-form-select:focus{outline:none;border-color:var(--green);}
+.scba-form-select option{background:var(--surface2);}
+.scba-nfpa-note{font-size:12px;color:var(--text-muted);background:rgba(22,163,74,.07);border:1px solid rgba(22,163,74,.2);border-radius:var(--radius);padding:9px 13px;margin-bottom:14px;line-height:1.5;}
+.scba-section-divider{font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-dim);margin:16px 0 10px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.hydro-bar{display:flex;align-items:center;gap:8px;}
+.hydro-bar-fill{flex:1;background:var(--surface2);border-radius:3px;height:6px;overflow:hidden;}
+.hydro-bar-inner{height:100%;border-radius:3px;}
 @media(max-width:640px){
+  .scba-summary-row{grid-template-columns:1fr 1fr;}
+  .scba-table th:nth-child(n+5),.scba-table td:nth-child(n+5){display:none;}
+  .scba-form-grid{grid-template-columns:1fr;}
+}
+
+/* HOSE TEST MODULE */
+.hose-size-tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;}
+.hose-size-btn{padding:8px 20px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text-muted);font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:1px;}
+.hose-size-btn:hover{border-color:var(--text-muted);color:var(--text);}
+.hose-size-btn.active{background:var(--blue);border-color:var(--blue);color:#fff;}
+.hose-summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px;}
+.hstat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center;}
+.hstat-val{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;line-height:1;margin-bottom:3px;}
+.hstat-lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);}
+.hstat.stat-good .hstat-val{color:var(--green);}
+.hstat.stat-bad .hstat-val{color:var(--red);}
+.hstat.stat-warn .hstat-val{color:var(--amber);}
+.hstat.stat-blue .hstat-val{color:var(--blue);}
+.hose-filter-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.hose-status-btn{padding:5px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface);color:var(--text-muted);font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;}
+.hose-status-btn:hover{border-color:var(--text-muted);}
+.hose-status-btn.active{border-color:var(--blue);color:var(--text);background:rgba(37,99,235,.1);}
+.hose-search{margin-left:auto;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;padding:6px 12px;width:180px;}
+.hose-search:focus{outline:none;border-color:var(--blue);}
+.hose-table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+.hose-table{width:100%;border-collapse:collapse;}
+.hose-table th{font-family:'Oswald',sans-serif;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);padding:10px 14px;text-align:left;border-bottom:2px solid var(--border);background:var(--surface2);}
+.hose-table td{padding:9px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+.hose-table tr:last-child td{border-bottom:none;}
+.hose-table tr:hover td{background:var(--surface2);}
+.hose-num{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;}
+.hose-year-cell{font-family:'JetBrains Mono',monospace;font-size:11px;text-align:center;padding:9px 8px !important;}
+.hbadge{display:inline-block;padding:2px 7px;border-radius:3px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;}
+.hbadge-pass{background:rgba(22,163,74,.2);color:#4ade80;border:1px solid rgba(22,163,74,.3);}
+.hbadge-fail{background:rgba(220,38,38,.2);color:#f87171;border:1px solid rgba(220,38,38,.3);}
+.hbadge-removed{background:rgba(139,148,158,.1);color:var(--text-dim);border:1px solid var(--border);}
+.hbadge-none{color:var(--text-dim);font-size:10px;}
+.hose-year-header{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);text-align:center;letter-spacing:1px;}
+.hose-test-btn{padding:6px 14px;background:var(--blue);border:none;border-radius:var(--radius);color:#fff;font-family:'Barlow',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s;}
+.hose-test-btn:hover{background:#1d4ed8;}
+/* Record test modal */
+.htest-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+.htest-field{display:flex;flex-direction:column;gap:5px;}
+.htest-field.full{grid-column:1/-1;}
+.htest-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);}
+.htest-input,.htest-select{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;padding:8px 12px;}
+.htest-input:focus,.htest-select:focus{outline:none;border-color:var(--blue);}
+.htest-select option{background:var(--surface2);}
+.hose-psi-note{font-size:12px;color:var(--text-muted);background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.2);border-radius:var(--radius);padding:10px 14px;margin-bottom:16px;}
+.hose-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:400;align-items:center;justify-content:center;padding:24px;display:none;}
+.hose-modal-overlay.visible{display:flex;}
+.hose-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);max-width:560px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:var(--shadow);}
+.hose-modal-header{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);}
+.hose-modal-body{padding:20px 22px;}
+.btn-row{display:flex;gap:10px;justify-content:flex-end;}
+.btn-secondary{padding:8px 18px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text-muted);font-family:'Barlow',sans-serif;font-size:14px;font-weight:500;cursor:pointer;}
+.btn-primary{padding:8px 22px;background:var(--blue);border:none;border-radius:var(--radius);color:#fff;font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;cursor:pointer;}
+.btn-primary:hover{background:#1d4ed8;}
+
+@media(max-width:640px){
+  .hose-summary-row{grid-template-columns:1fr 1fr;}
+  .hose-table th:nth-child(n+5),.hose-table td:nth-child(n+5){display:none;}
+  .hose-search{width:100%;margin-left:0;}
+}
+
+
   .app-header{padding:0 14px;}.portal-main,.module-content{padding:20px 14px;}
   .module-grid{grid-template-columns:1fr 1fr;}.year-summary-cards{grid-template-columns:1fr 1fr;}
   .portal-stats-bar{gap:16px;}.pstat-divider{display:none;}
@@ -253,17 +384,17 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
         <div class="module-name">Truck Checks</div>
         <div class="module-desc">NFPA 1911 apparatus inspections</div>
       </a>
-      <div class="module-card" style="--module-color:#f59e0b" onclick="cs('hose')">
-        <span class="module-badge badge-soon">SOON</span>
+      <div class="module-card" style="--module-color:#2563eb" onclick="openModule('hose')">
+        <span class="module-badge badge-live">LIVE</span>
         <span class="module-icon">🚿</span>
-        <div class="module-name">Hose Checks</div>
-        <div class="module-desc">Inventory, service testing, NFPA 1962</div>
+        <div class="module-name">Hose Tests</div>
+        <div class="module-desc">Inventory, test history, NFPA 1962 records</div>
       </div>
-      <div class="module-card" style="--module-color:#2563eb" onclick="cs('scba')">
-        <span class="module-badge badge-soon">SOON</span>
+      <div class="module-card" style="--module-color:#16a34a" onclick="openModule('scba')">
+        <span class="module-badge badge-live">LIVE</span>
         <span class="module-icon">😮‍💨</span>
         <div class="module-name">SCBA Checks</div>
-        <div class="module-desc">Pack, cylinder, and mask records</div>
+        <div class="module-desc">Packs, cylinders, masks · NFPA 1852</div>
       </div>
     </div>
     <div class="portal-section-label">Records & Admin</div>
@@ -352,6 +483,141 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
     <div class="page-title">Active Roster</div>
     <div class="page-sub">Quapaw Volunteer Fire Department — 26 active members</div>
     <div class="roster-grid" id="rosterGrid"></div>
+  </div>
+</div>
+
+<!-- ══ SCBA CHECKS ════════════════════════════════════ -->
+<div class="view" id="view-scba">
+  <div class="inner-header">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <span class="inner-divider">/</span>
+    <span class="inner-title">SCBA Checks</span>
+  </div>
+  <div class="module-content">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+      <div>
+        <div class="page-title">SCBA Inventory & Inspection</div>
+        <div class="page-sub">NFPA 1852 · Packs, Cylinders (2216 &amp; 4500 PSI), Face Pieces · Annual flow test + monthly checks</div>
+      </div>
+    </div>
+    <div class="scba-tab-nav">
+      <button class="scba-tab-btn active" onclick="setScbaTab('packs',this)">😮‍💨 Packs</button>
+      <button class="scba-tab-btn" onclick="setScbaTab('cylinders',this)">🔴 Cylinders</button>
+      <button class="scba-tab-btn" onclick="setScbaTab('masks',this)">🥽 Face Pieces</button>
+      <button class="scba-tab-btn" onclick="setScbaTab('inspect',this)">✅ Run Inspection</button>
+    </div>
+    <div id="scba-packs-panel"></div>
+    <div id="scba-cylinders-panel" style="display:none;"></div>
+    <div id="scba-masks-panel" style="display:none;"></div>
+    <div id="scba-inspect-panel" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- SCBA add/edit modal -->
+<div class="scba-modal-overlay" id="scbaModal">
+  <div class="scba-modal">
+    <div class="scba-modal-header">
+      <div class="modal-title" id="scbaModalTitle">Add Equipment</div>
+      <button class="modal-close" onclick="closeScbaModal()">✕</button>
+    </div>
+    <div class="scba-modal-body" id="scbaModalBody"></div>
+  </div>
+</div>
+
+<!-- SCBA inspection result modal -->
+<div class="scba-modal-overlay" id="scbaInspModal">
+  <div class="scba-modal">
+    <div class="scba-modal-header">
+      <div class="modal-title" id="scbaInspModalTitle">Inspection Complete</div>
+      <button class="modal-close" onclick="document.getElementById('scbaInspModal').classList.remove('visible')">✕</button>
+    </div>
+    <div class="scba-modal-body" id="scbaInspModalBody"></div>
+  </div>
+</div>
+
+<!-- ══ HOSE TESTS ══════════════════════════════════════ -->
+<div class="view" id="view-hose">
+  <div class="inner-header">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <span class="inner-divider">/</span>
+    <span class="inner-title">Hose Tests</span>
+  </div>
+  <div class="module-content">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px;">
+      <div>
+        <div class="page-title">Hose Test Records</div>
+        <div class="page-sub">NFPA 1962 Service Testing · 1.75" @ 300 PSI · 2.5" @ 300 PSI · 3" @ 200 PSI · 3-minute duration</div>
+      </div>
+      <button class="hose-test-btn" onclick="openHoseTestModal()">+ Record Test</button>
+    </div>
+    <div class="hose-size-tabs">
+      <button class="hose-size-btn active" onclick="setHoseSize('1.75',this)">1¾" Hose</button>
+      <button class="hose-size-btn" onclick="setHoseSize('2.5',this)">2½" Hose</button>
+      <button class="hose-size-btn" onclick="setHoseSize('3',this)">3" Hose</button>
+    </div>
+    <div class="hose-summary-row" id="hoseSummary"></div>
+    <div class="hose-filter-row">
+      <button class="hose-status-btn active" onclick="setHoseFilter('all',this)">All</button>
+      <button class="hose-status-btn" onclick="setHoseFilter('pass',this)">✓ Passed</button>
+      <button class="hose-status-btn" onclick="setHoseFilter('fail',this)">✕ Failed / BAD</button>
+      <button class="hose-status-btn" onclick="setHoseFilter('untested',this)">— Not Tested</button>
+      <input class="hose-search" type="text" placeholder="Search hose #..." id="hoseSearch" oninput="renderHoseTable()">
+    </div>
+    <div id="hoseTableWrap"></div>
+  </div>
+</div>
+
+<!-- Hose test record modal -->
+<div class="hose-modal-overlay" id="hoseTestModal">
+  <div class="hose-modal">
+    <div class="hose-modal-header">
+      <div class="modal-title">Record Hose Test</div>
+      <button class="modal-close" onclick="closeHoseModal()">✕</button>
+    </div>
+    <div class="hose-modal-body">
+      <div class="hose-psi-note" id="hosePsiNote">1¾" hose tested at <strong>300 PSI</strong> for 3 minutes (NFPA 1962)</div>
+      <div class="htest-form-grid">
+        <div class="htest-field">
+          <label class="htest-label">Hose Size</label>
+          <select class="htest-select" id="htSize" onchange="updatePsiNote()">
+            <option value="1.75">1¾" Hose</option>
+            <option value="2.5">2½" Hose</option>
+            <option value="3">3" Hose</option>
+          </select>
+        </div>
+        <div class="htest-field">
+          <label class="htest-label">Hose Number</label>
+          <input class="htest-input" id="htHoseNum" placeholder="e.g. 101" type="text">
+        </div>
+        <div class="htest-field">
+          <label class="htest-label">Test Date</label>
+          <input class="htest-input" id="htDate" type="date">
+        </div>
+        <div class="htest-field">
+          <label class="htest-label">Result</label>
+          <select class="htest-select" id="htResult">
+            <option value="PASS">✓ Passed</option>
+            <option value="FAIL">✕ Failed (BAD)</option>
+          </select>
+        </div>
+        <div class="htest-field">
+          <label class="htest-label">Tester Name</label>
+          <input class="htest-input" id="htTester" placeholder="Your name">
+        </div>
+        <div class="htest-field">
+          <label class="htest-label">Actual PSI Reached</label>
+          <input class="htest-input" id="htPsi" placeholder="e.g. 300" type="number">
+        </div>
+        <div class="htest-field full">
+          <label class="htest-label">Notes (optional — failure reason, coupling condition, etc.)</label>
+          <input class="htest-input" id="htNotes" placeholder="e.g. Pinhole leak at coupling, jacket abrasion at 25ft mark...">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="closeHoseModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveHoseTest()">Save Record</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -611,7 +877,1029 @@ function openModule(mod){
   if(mod==='roster'){renderRoster();showView('roster');return;}
   if(mod==='run-log'){showView('run-log');ensureRunsLoaded();return;}
   if(mod==='run-stats'){showView('run-stats');renderStatsTab('trend');return;}
+  if(mod==='scba'){showView('scba');initScbaModule();return;}
+  if(mod==='hose'){showView('hose');initHoseModule();return;}
 }
+
+// ═══════════════════════════════════════════════
+// SCBA MODULE — NFPA 1852
+// ═══════════════════════════════════════════════
+
+// ── Checklist definitions per NFPA 1852 ───────
+// Monthly = routine inspection; Annual = full service/flow test
+const SCBA_CHECKLIST = {
+  pack: [
+    { section:'Frame & Harness', freq:'monthly', items:[
+      {id:'frm1', text:'Frame — no cracks, bends, or structural damage'},
+      {id:'frm2', text:'Back plate free of sharp edges or deformation'},
+      {id:'frm3', text:'Shoulder straps — no cuts, abrasion, or fraying'},
+      {id:'frm4', text:'Waist / chest strap in good condition and buckles function'},
+      {id:'frm5', text:'All hardware (buckles, D-rings) present and functional'},
+      {id:'frm6', text:'Cylinder band / retainer secure, latch functions properly'},
+    ]},
+    { section:'Regulator & Connections', freq:'monthly', items:[
+      {id:'reg1', text:'High-pressure hose — no cracks, abrasion, or kinking'},
+      {id:'reg2', text:'High-pressure hose connection tight, no leaks (listen/feel)'},
+      {id:'reg3', text:'Demand regulator / facepiece connection coupler functional'},
+      {id:'reg4', text:'Bypass valve opens and closes freely'},
+      {id:'reg5', text:'Pressure gauge reads correctly and glass unbroken'},
+      {id:'reg6', text:'Buddy-breathing / rescue connection (if equipped) functional'},
+    ]},
+    { section:'PASS Device', freq:'monthly', items:[
+      {id:'pas1', text:'PASS device powers on and self-test passes'},
+      {id:'pas2', text:'Pre-alarm (motion sensing) activates when stationary ~20 sec'},
+      {id:'pas3', text:'Full alarm activates and audible at required distance'},
+      {id:'pas4', text:'PASS manual activation button functional'},
+      {id:'pas5', text:'Battery — charge level adequate (replace if <50%)'},
+      {id:'pas6', text:'PASS device mounting bracket secure on frame'},
+    ]},
+    { section:'Annual Flow Test (NFPA 1852 §7)', freq:'annual', items:[
+      {id:'fl1', text:'Cylinder charged to rated working pressure before test'},
+      {id:'fl2', text:'Exhalation valve leakage test — does not exceed allowable rate'},
+      {id:'fl3', text:'Inhalation resistance within manufacturer spec'},
+      {id:'fl4', text:'Positive pressure verified in facepiece during use'},
+      {id:'fl5', text:'Bypass flow rate meets or exceeds 100 LPM'},
+      {id:'fl6', text:'End-of-service-time indicator (alarm) activates at correct pressure'},
+      {id:'fl7', text:'Overall flow rate within 10% of rated capacity'},
+      {id:'fl8', text:'All results recorded on flow test form; deficiencies tagged OOS'},
+    ]},
+  ],
+  cylinder: [
+    { section:'Visual Inspection', freq:'monthly', items:[
+      {id:'cyl1', text:'Cylinder pressure at or above 90% of rated working pressure'},
+      {id:'cyl2', text:'No visible corrosion, gouges, cuts, or abrasion on shell'},
+      {id:'cyl3', text:'Carbon-fiber wrap (4500 PSI) — no delamination, cuts, or damage'},
+      {id:'cyl4', text:'Valve hand wheel present and turns smoothly'},
+      {id:'cyl5', text:'Valve O-ring in good condition — no cracking or deformation'},
+      {id:'cyl6', text:'DOT/TC label and hydrostatic test date visible and legible'},
+    ]},
+    { section:'Hydrostatic Test Compliance', freq:'annual', items:[
+      {id:'hyd1', text:'2216 PSI steel cylinders — hydro test current (every 5 years)'},
+      {id:'hyd2', text:'4500 PSI composite cylinders — hydro test current (every 3 years)'},
+      {id:'hyd3', text:'15-year service life not exceeded (composite cylinders)'},
+      {id:'hyd4', text:'Hydro test date stamped clearly on cylinder'},
+      {id:'hyd5', text:'No cylinders past hydro due date in service'},
+    ]},
+    { section:'Filling & Handling', freq:'monthly', items:[
+      {id:'fil1', text:'Cylinder charged only from approved breathing-air source'},
+      {id:'fil2', text:'Air quality test current — Grade D or better (NFPA 1989)'},
+      {id:'fil3', text:'Cylinder properly seated and secured in pack band'},
+      {id:'fil4', text:'No cylinders with damaged, stripped, or cross-threaded valve'},
+    ]},
+  ],
+  mask: [
+    { section:'Facepiece & Lens', freq:'monthly', items:[
+      {id:'msk1', text:'Lens clear — no scratches, fogging, or crazing impairing vision'},
+      {id:'msk2', text:'Lens seal to facepiece intact — no gaps or delamination'},
+      {id:'msk3', text:'Facepiece body — no cracks, tears, or stiffening (silicone/rubber)'},
+      {id:'msk4', text:'Head harness straps elastic and adjust properly'},
+      {id:'msk5', text:'All strap buckles and retainers present and functional'},
+      {id:'msk6', text:'Exhalation valve cover present and undamaged'},
+    ]},
+    { section:'Sealing & Valves', freq:'monthly', items:[
+      {id:'val1', text:'Exhalation valve disc seated properly — no distortion or debris'},
+      {id:'val2', text:'Inhalation check valves present (if applicable to model)'},
+      {id:'val3', text:'Inner mask / oral-nasal cup in good condition (if equipped)'},
+      {id:'val4', text:'Voicemitter membrane undamaged and transmits voice clearly'},
+      {id:'val5', text:'Speaking diaphragm / port cover undamaged (if equipped)'},
+    ]},
+    { section:'Fit Test Compliance (OSHA 29 CFR 1910.134)', freq:'annual', items:[
+      {id:'fit1', text:'Qualitative or quantitative fit test performed within 12 months'},
+      {id:'fit2', text:'Fit test record on file for this facepiece size/model per member'},
+      {id:'fit3', text:'Member trained on donning / doffing this specific facepiece model'},
+      {id:'fit4', text:'Medical clearance current for each assigned member (annual)'},
+    ]},
+    { section:'Cleaning & Decontamination', freq:'monthly', items:[
+      {id:'cln1', text:'Facepiece cleaned per manufacturer protocol after each use'},
+      {id:'cln2', text:'No contaminants, soot, or residue inside lens or straps'},
+      {id:'cln3', text:'Stored in protective bag or case — not loose in compartment'},
+      {id:'cln4', text:'Storage bag / case in good condition — closes fully'},
+    ]},
+  ],
+};
+
+// ── localStorage helpers ───────────────────────
+function scbaGet(key){try{return JSON.parse(localStorage.getItem('qfd_scba_'+key)||'null');}catch{return null;}}
+function scbaSave(key,val){localStorage.setItem('qfd_scba_'+key,JSON.stringify(val));}
+
+function getScbaPacks(){return scbaGet('packs')||[];}
+function getScbaCylinders(){return scbaGet('cylinders')||[];}
+function getScbaMasks(){return scbaGet('masks')||[];}
+function getScbaInspections(){return scbaGet('inspections')||[];}
+
+// ── Tab state ─────────────────────────────────
+let scbaTab='packs', scbaPanelFilter='all';
+
+function initScbaModule(){
+  setScbaTab('packs', document.querySelector('.scba-tab-btn'));
+}
+
+function setScbaTab(tab, btn){
+  scbaTab=tab;
+  document.querySelectorAll('.scba-tab-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  ['packs','cylinders','masks','inspect'].forEach(t=>{
+    document.getElementById('scba-'+t+'-panel').style.display=t===tab?'':'none';
+  });
+  if(tab==='packs') renderScbaPacks();
+  if(tab==='cylinders') renderScbaCylinders();
+  if(tab==='masks') renderScbaMasks();
+  if(tab==='inspect') renderScbaInspect();
+}
+
+// ── Utilities ─────────────────────────────────
+function hydroStatus(dateStr, type){
+  if(!dateStr) return {label:'Unknown',cls:'scba-badge-warn',pct:0};
+  const d=new Date(dateStr);
+  const yrs=type==='4500'?3:5;
+  const exp=new Date(d); exp.setFullYear(exp.getFullYear()+yrs);
+  const now=new Date();
+  const totalMs=exp-d; const remMs=exp-now;
+  const pct=Math.max(0,Math.min(100,Math.round(remMs/totalMs*100)));
+  const daysRem=Math.round(remMs/86400000);
+  if(daysRem<0) return {label:'OVERDUE',cls:'scba-badge-due',pct:0,daysRem};
+  if(daysRem<180) return {label:`${daysRem}d left`,cls:'scba-badge-warn',pct,daysRem};
+  return {label:`OK · ${Math.round(daysRem/365.25*10)/10}yr`,cls:'scba-badge-ok',pct,daysRem};
+}
+function lastInspDate(unitId, unitType){
+  const insps=getScbaInspections().filter(i=>i.unitId===unitId&&i.unitType===unitType);
+  if(!insps.length) return null;
+  return insps.sort((a,b)=>b.date.localeCompare(a.date))[0].date;
+}
+function inspAge(dateStr){
+  if(!dateStr) return null;
+  return Math.round((new Date()-new Date(dateStr))/86400000);
+}
+function inspBadge(dateStr){
+  const age=inspAge(dateStr);
+  if(age===null) return `<span class="scba-badge scba-badge-warn">Never</span>`;
+  if(age>365) return `<span class="scba-badge scba-badge-due">${Math.round(age/30)}mo ago</span>`;
+  if(age>180) return `<span class="scba-badge scba-badge-warn">${Math.round(age/30)}mo ago</span>`;
+  return `<span class="scba-badge scba-badge-ok">${age}d ago</span>`;
+}
+
+// ── Packs panel ───────────────────────────────
+function renderScbaPacks(){
+  const packs=getScbaPacks();
+  const totalInspections=getScbaInspections().filter(i=>i.unitType==='pack').length;
+  const overdue=packs.filter(p=>{const d=inspAge(lastInspDate(p.id,'pack'));return d===null||d>365;}).length;
+  document.getElementById('scba-packs-panel').innerHTML=`
+    <div class="scba-summary-row">
+      <div class="scba-stat s-blue"><div class="scba-stat-val">${packs.length}</div><div class="scba-stat-lbl">Total Packs</div></div>
+      <div class="scba-stat s-ok"><div class="scba-stat-val">${packs.filter(p=>!p.oos).length}</div><div class="scba-stat-lbl">In Service</div></div>
+      <div class="scba-stat s-bad"><div class="scba-stat-val">${packs.filter(p=>p.oos).length}</div><div class="scba-stat-lbl">Out of Service</div></div>
+      <div class="scba-stat ${overdue?'s-warn':'s-ok'}"><div class="scba-stat-val">${overdue}</div><div class="scba-stat-lbl">Inspection Due</div></div>
+    </div>
+    <div class="scba-action-row">
+      <button class="scba-add-btn" onclick="openScbaAddModal('pack')">+ Add Pack</button>
+      <button class="scba-filter-btn ${scbaPanelFilter==='all'?'active':''}" onclick="scbaPanelFilter='all';renderScbaPacks()">All</button>
+      <button class="scba-filter-btn ${scbaPanelFilter==='oos'?'active':''}" onclick="scbaPanelFilter='oos';renderScbaPacks()">OOS Only</button>
+    </div>
+    ${packs.length===0?`<div class="empty-state"><div style="font-size:36px;margin-bottom:10px;">😮‍💨</div><div style="font-family:'Oswald',sans-serif;font-size:15px;text-transform:uppercase;">No packs on record</div><div style="font-size:13px;color:var(--text-muted);margin-top:5px;">Click "+ Add Pack" to build your inventory.</div></div>`:`
+    <div class="scba-table-wrap"><table class="scba-table">
+      <thead><tr><th>Pack ID</th><th>Manufacturer</th><th>Model</th><th>Assigned To</th><th>Last Inspection</th><th>Status</th><th></th></tr></thead>
+      <tbody>${packs.filter(p=>scbaPanelFilter!=='oos'||p.oos).map(p=>`
+        <tr>
+          <td class="scba-id">${p.id}</td>
+          <td>${p.manufacturer||'—'}</td>
+          <td style="font-size:12px;color:var(--text-muted);">${p.model||'—'}</td>
+          <td style="font-size:12px;">${p.assigned||'—'}</td>
+          <td>${inspBadge(lastInspDate(p.id,'pack'))}</td>
+          <td>${p.oos?`<span class="scba-badge scba-badge-oos">OOS</span>`:`<span class="scba-badge scba-badge-ok">IN SVC</span>`}</td>
+          <td><button class="card-action" onclick="openScbaEdit('pack','${p.id}')">Edit</button></td>
+        </tr>`).join('')}
+      </tbody></table></div>`}
+  `;
+}
+
+// ── Cylinders panel ───────────────────────────
+function renderScbaCylinders(){
+  const cyls=getScbaCylinders();
+  const overdue=cyls.filter(c=>{const s=hydroStatus(c.hydroDate,c.type);return s.label==='OVERDUE';}).length;
+  const warn=cyls.filter(c=>{const s=hydroStatus(c.hydroDate,c.type);return s.cls==='scba-badge-warn';}).length;
+  document.getElementById('scba-cylinders-panel').innerHTML=`
+    <div class="scba-summary-row">
+      <div class="scba-stat s-blue"><div class="scba-stat-val">${cyls.length}</div><div class="scba-stat-lbl">Total Cylinders</div></div>
+      <div class="scba-stat s-ok"><div class="scba-stat-val">${cyls.filter(c=>c.type==='2216').length}</div><div class="scba-stat-lbl">2216 PSI</div></div>
+      <div class="scba-stat s-ok"><div class="scba-stat-val">${cyls.filter(c=>c.type==='4500').length}</div><div class="scba-stat-lbl">4500 PSI</div></div>
+      <div class="scba-stat ${overdue?'s-bad':warn?'s-warn':'s-ok'}"><div class="scba-stat-val">${overdue+warn}</div><div class="scba-stat-lbl">Hydro Alerts</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:var(--radius);padding:9px 13px;margin-bottom:14px;">
+      ⚠ Hydrostatic test intervals per DOT/TC: <strong>2216 PSI steel — every 5 years</strong> · <strong>4500 PSI composite — every 3 years</strong> · Composite cylinders retire at <strong>15 years</strong>.
+    </div>
+    <div class="scba-action-row">
+      <button class="scba-add-btn" onclick="openScbaAddModal('cylinder')">+ Add Cylinder</button>
+    </div>
+    ${cyls.length===0?`<div class="empty-state"><div style="font-size:36px;margin-bottom:10px;">🔴</div><div style="font-family:'Oswald',sans-serif;font-size:15px;text-transform:uppercase;">No cylinders on record</div><div style="font-size:13px;color:var(--text-muted);margin-top:5px;">Click "+ Add Cylinder" to start tracking.</div></div>`:`
+    <div class="scba-table-wrap"><table class="scba-table">
+      <thead><tr><th>Cylinder ID</th><th>Type / PSI</th><th>Mfg Date</th><th>Last Hydro</th><th>Hydro Status</th><th>Assigned Pack</th><th></th></tr></thead>
+      <tbody>${cyls.map(c=>{
+        const s=hydroStatus(c.hydroDate,c.type);
+        const mfgY=c.mfgDate?c.mfgDate.split('-')[0]:'—';
+        const age15=c.type==='4500'&&c.mfgDate?(new Date().getFullYear()-parseInt(c.mfgDate.split('-')[0]))>=15:false;
+        return`<tr>
+          <td class="scba-id">${c.id}</td>
+          <td><span class="scba-badge ${c.type==='4500'?'scba-badge-ok':'scba-badge-warn'}">${c.type} PSI</span></td>
+          <td style="font-size:12px;">${mfgY}${age15?' <span style="color:var(--red);font-size:10px;">RETIRE</span>':''}</td>
+          <td style="font-family:\'JetBrains Mono\',monospace;font-size:11px;">${c.hydroDate||'—'}</td>
+          <td>
+            <span class="scba-badge ${s.cls}">${s.label}</span>
+            ${c.hydroDate?`<div class="hydro-bar" style="margin-top:4px;"><div class="hydro-bar-fill"><div class="hydro-bar-inner" style="width:${s.pct}%;background:${s.cls==='scba-badge-ok'?'var(--green)':s.cls==='scba-badge-warn'?'var(--amber)':'var(--red)'};"></div></div></div>`:''}
+          </td>
+          <td style="font-size:12px;">${c.assignedPack||'—'}</td>
+          <td><button class="card-action" onclick="openScbaEdit('cylinder','${c.id}')">Edit</button></td>
+        </tr>`;}).join('')}
+      </tbody></table></div>`}
+  `;
+}
+
+// ── Masks panel ───────────────────────────────
+function renderScbaMasks(){
+  const masks=getScbaMasks();
+  const fitDue=masks.filter(m=>{const d=inspAge(m.lastFitTest);return d===null||d>365;}).length;
+  document.getElementById('scba-masks-panel').innerHTML=`
+    <div class="scba-summary-row">
+      <div class="scba-stat s-blue"><div class="scba-stat-val">${masks.length}</div><div class="scba-stat-lbl">Total Masks</div></div>
+      <div class="scba-stat s-ok"><div class="scba-stat-val">${masks.filter(m=>!m.oos).length}</div><div class="scba-stat-lbl">In Service</div></div>
+      <div class="scba-stat s-bad"><div class="scba-stat-val">${masks.filter(m=>m.oos).length}</div><div class="scba-stat-lbl">Out of Service</div></div>
+      <div class="scba-stat ${fitDue?'s-warn':'s-ok'}"><div class="scba-stat-val">${fitDue}</div><div class="scba-stat-lbl">Fit Test Due</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--text-muted);background:rgba(37,99,235,.07);border:1px solid rgba(37,99,235,.2);border-radius:var(--radius);padding:9px 13px;margin-bottom:14px;">
+      ℹ OSHA 29 CFR 1910.134 requires annual fit testing and medical clearance for all SCBA users.
+    </div>
+    <div class="scba-action-row">
+      <button class="scba-add-btn" onclick="openScbaAddModal('mask')">+ Add Face Piece</button>
+    </div>
+    ${masks.length===0?`<div class="empty-state"><div style="font-size:36px;margin-bottom:10px;">🥽</div><div style="font-family:'Oswald',sans-serif;font-size:15px;text-transform:uppercase;">No face pieces on record</div><div style="font-size:13px;color:var(--text-muted);margin-top:5px;">Click "+ Add Face Piece" to start tracking.</div></div>`:`
+    <div class="scba-table-wrap"><table class="scba-table">
+      <thead><tr><th>Mask ID</th><th>Size / Model</th><th>Assigned Member</th><th>Last Fit Test</th><th>Last Insp</th><th>Status</th><th></th></tr></thead>
+      <tbody>${masks.map(m=>`
+        <tr>
+          <td class="scba-id">${m.id}</td>
+          <td>${m.size||'—'}${m.model?' / '+m.model:''}</td>
+          <td style="font-size:12px;">${m.assigned||'—'}</td>
+          <td>${inspBadge(m.lastFitTest)}</td>
+          <td>${inspBadge(lastInspDate(m.id,'mask'))}</td>
+          <td>${m.oos?`<span class="scba-badge scba-badge-oos">OOS</span>`:`<span class="scba-badge scba-badge-ok">IN SVC</span>`}</td>
+          <td><button class="card-action" onclick="openScbaEdit('mask','${m.id}')">Edit</button></td>
+        </tr>`).join('')}
+      </tbody></table></div>`}
+  `;
+}
+
+// ── Inspection panel ──────────────────────────
+let scbaInspState={unitType:'pack',unitId:'',items:{},notes:{}};
+
+function renderScbaInspect(){
+  const packs=getScbaPacks();
+  const cyls=getScbaCylinders();
+  const masks=getScbaMasks();
+  const allUnits=[
+    ...packs.map(p=>({id:p.id,label:`Pack: ${p.id}${p.manufacturer?' — '+p.manufacturer:''}`,type:'pack'})),
+    ...cyls.map(c=>({id:c.id,label:`Cylinder: ${c.id} (${c.type} PSI)`,type:'cylinder'})),
+    ...masks.map(m=>({id:m.id,label:`Mask: ${m.id}${m.assigned?' — '+m.assigned:''}`,type:'mask'})),
+  ];
+  const allInsps=getScbaInspections();
+  const recent=allInsps.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+
+  document.getElementById('scba-inspect-panel').innerHTML=`
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header"><div class="card-title">Start New Inspection</div></div>
+      <div style="padding:18px 20px;">
+        <div class="scba-form-grid">
+          <div class="scba-form-field">
+            <label class="scba-form-label">Inspector Name</label>
+            <input class="scba-form-input" id="inspectorName" placeholder="Your name">
+          </div>
+          <div class="scba-form-field">
+            <label class="scba-form-label">Date</label>
+            <input class="scba-form-input" id="inspDate" type="date" value="${new Date().toISOString().split('T')[0]}">
+          </div>
+          <div class="scba-form-field full">
+            <label class="scba-form-label">Select Unit to Inspect</label>
+            <select class="scba-form-select" id="inspUnit" onchange="scbaLoadChecklist()">
+              <option value="">— Select a pack, cylinder, or mask —</option>
+              ${allUnits.length===0?'<option disabled>No units on record — add packs/cylinders/masks first</option>':''}
+              ${allUnits.map(u=>`<option value="${u.type}::${u.id}">${u.label}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div id="scbaChecklistArea"></div>
+      </div>
+    </div>
+    ${recent.length?`
+    <div class="card">
+      <div class="card-header"><div class="card-title">Recent Inspections</div></div>
+      <div class="scba-table-wrap" style="border:none;border-radius:0;">
+      <table class="scba-table">
+        <thead><tr><th>Date</th><th>Unit</th><th>Type</th><th>Inspector</th><th>Result</th></tr></thead>
+        <tbody>${recent.map(i=>{
+          const fails=Object.values(i.items||{}).filter(v=>v==='fail').length;
+          return`<tr>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${i.date}</td>
+            <td class="scba-id">${i.unitId}</td>
+            <td style="text-transform:capitalize;font-size:12px;">${i.unitType}</td>
+            <td style="font-size:12px;">${i.inspector||'—'}</td>
+            <td>${fails===0?`<span class="scba-badge scba-badge-ok">PASS</span>`:`<span class="scba-badge scba-badge-due">${fails} FAIL${fails>1?'S':''}</span>`}</td>
+          </tr>`;}).join('')}
+        </tbody>
+      </table></div>
+    </div>`:''}
+  `;
+}
+
+function scbaLoadChecklist(){
+  const val=document.getElementById('inspUnit')?.value||'';
+  const area=document.getElementById('scbaChecklistArea');
+  if(!val){area.innerHTML='';return;}
+  const [type,id]=val.split('::');
+  scbaInspState={unitType:type,unitId:id,items:{},notes:{}};
+  const sections=SCBA_CHECKLIST[type]||[];
+  let html=`<div style="margin-top:16px;">`;
+  sections.forEach(sec=>{
+    html+=`<div class="scba-insp-section">
+      <div class="scba-insp-title">${sec.section} <span style="font-size:9px;letter-spacing:1px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">${sec.freq.toUpperCase()}</span></div>`;
+    sec.items.forEach(item=>{
+      html+=`<div class="scba-checklist-item" id="ci_${item.id}">
+        <div style="flex:1;">
+          <div class="scba-check-label">${item.text}</div>
+          <div id="cn_${item.id}"></div>
+        </div>
+        <div class="scba-btn-group">
+          <button onclick="scbaSetItem('${item.id}','pass',this)">PASS</button>
+          <button onclick="scbaSetItem('${item.id}','fail',this)">FAIL</button>
+          <button onclick="scbaSetItem('${item.id}','na',this)">N/A</button>
+        </div>
+      </div>`;
+    });
+    html+=`</div>`;
+  });
+  html+=`<div style="margin-top:16px;margin-bottom:4px;"><label class="scba-form-label">Overall Notes</label></div>
+    <textarea class="scba-form-input" id="inspOverallNotes" rows="2" style="width:100%;resize:vertical;" placeholder="Any observations, deficiencies, or actions taken..."></textarea>
+    <div style="margin-top:14px;display:flex;justify-content:flex-end;">
+      <button class="btn-primary" onclick="submitScbaInspection()">Submit Inspection</button>
+    </div>
+  </div>`;
+  area.innerHTML=html;
+}
+
+function scbaSetItem(id, val, btn){
+  scbaInspState.items[id]=val;
+  const row=document.getElementById('ci_'+id);
+  if(!row) return;
+  row.querySelectorAll('.scba-btn-group button').forEach(b=>{b.className='';});
+  btn.classList.add(val);
+  if(val==='fail'){
+    if(!document.getElementById('cn_'+id).innerHTML){
+      document.getElementById('cn_'+id).innerHTML=`<input class="scba-note-input" placeholder="Describe deficiency..." oninput="scbaInspState.notes['${id}']=this.value">`;
+    }
+  } else {
+    document.getElementById('cn_'+id).innerHTML='';
+  }
+}
+
+function submitScbaInspection(){
+  const val=document.getElementById('inspUnit')?.value||'';
+  if(!val){alert('Please select a unit.');return;}
+  const inspector=document.getElementById('inspectorName')?.value.trim()||'';
+  const date=document.getElementById('inspDate')?.value||new Date().toISOString().split('T')[0];
+  if(!inspector){alert('Please enter your name.');return;}
+  const items=Object.assign({},scbaInspState.items);
+  const totalItems=Object.keys(items).length;
+  if(totalItems===0){alert('Please mark at least one checklist item.');return;}
+  const fails=Object.values(items).filter(v=>v==='fail');
+  const rec={id:Date.now().toString(),unitType:scbaInspState.unitType,unitId:scbaInspState.unitId,date,inspector,items,notes:Object.assign({},scbaInspState.notes),overallNotes:document.getElementById('inspOverallNotes')?.value||''};
+  const insps=getScbaInspections();insps.push(rec);scbaSave('inspections',insps);
+  // Show result modal
+  const [type,id]=val.split('::');
+  document.getElementById('scbaInspModalTitle').textContent=`Inspection — ${id}`;
+  document.getElementById('scbaInspModalBody').innerHTML=`
+    <div style="text-align:center;padding:16px 0 24px;">
+      <div style="font-size:48px;margin-bottom:8px;">${fails.length===0?'✅':'⚠️'}</div>
+      <div style="font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;margin-bottom:4px;">${fails.length===0?'All Items Passed':'Deficiencies Found'}</div>
+      <div style="font-size:13px;color:var(--text-muted);">${totalItems} items checked · ${fails.length} failure${fails.length!==1?'s':''} · ${Object.values(items).filter(v=>v==='na').length} N/A</div>
+    </div>
+    ${fails.length?`<div style="background:rgba(220,38,38,.07);border:1px solid rgba(220,38,38,.2);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;">
+      <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--red);margin-bottom:8px;">Failed Items</div>
+      ${Object.entries(rec.notes).map(([k,v])=>`<div style="font-size:13px;padding:4px 0;border-bottom:1px solid rgba(220,38,38,.15);">⚠ ${v||'No note'}</div>`).join('')}
+      ${fails.length>Object.keys(rec.notes).length?`<div style="font-size:12px;color:var(--text-muted);margin-top:6px;">${fails.length-Object.keys(rec.notes).length} additional failure(s) with no note.</div>`:''}
+    </div>`:''}
+    ${fails.length?`<div style="font-size:12px;color:var(--red);margin-bottom:16px;">⚠ Consider placing deficient equipment out of service until repaired.</div>`:''}
+    <div class="btn-row"><button class="btn-primary" onclick="document.getElementById('scbaInspModal').classList.remove('visible');setScbaTab('inspect',document.querySelectorAll('.scba-tab-btn')[3]);">Done</button></div>
+  `;
+  document.getElementById('scbaInspModal').classList.add('visible');
+}
+
+// ── Add / Edit modals ─────────────────────────
+function openScbaAddModal(type){
+  document.getElementById('scbaModalTitle').textContent=`Add ${type==='pack'?'Pack':type==='cylinder'?'Cylinder':'Face Piece'}`;
+  document.getElementById('scbaModalBody').innerHTML=scbaFormHtml(type,null);
+  document.getElementById('scbaModal').classList.add('visible');
+}
+function openScbaEdit(type,id){
+  let rec=null;
+  if(type==='pack') rec=getScbaPacks().find(p=>p.id===id);
+  if(type==='cylinder') rec=getScbaCylinders().find(c=>c.id===id);
+  if(type==='mask') rec=getScbaMasks().find(m=>m.id===id);
+  document.getElementById('scbaModalTitle').textContent=`Edit ${type==='pack'?'Pack':type==='cylinder'?'Cylinder':'Face Piece'} — ${id}`;
+  document.getElementById('scbaModalBody').innerHTML=scbaFormHtml(type,rec);
+  document.getElementById('scbaModal').classList.add('visible');
+}
+function closeScbaModal(){document.getElementById('scbaModal').classList.remove('visible');}
+
+function scbaFormHtml(type,rec){
+  const v=(f)=>rec?rec[f]||'':'';
+  if(type==='pack') return`
+    <div class="scba-nfpa-note">NFPA 1852: Record manufacturer, model, and serial number. Packs require annual flow test and monthly inspection.</div>
+    <div class="scba-form-grid">
+      <div class="scba-form-field"><label class="scba-form-label">Pack ID / Tag #</label><input class="scba-form-input" id="sf_id" value="${v('id')}" placeholder="e.g. PACK-01"></div>
+      <div class="scba-form-field"><label class="scba-form-label">Manufacturer</label><input class="scba-form-input" id="sf_manufacturer" value="${v('manufacturer')}" placeholder="e.g. Scott, MSA, Draeger"></div>
+      <div class="scba-form-field"><label class="scba-form-label">Model</label><input class="scba-form-input" id="sf_model" value="${v('model')}" placeholder="e.g. Air-Pak X3 Pro"></div>
+      <div class="scba-form-field"><label class="scba-form-label">Serial Number</label><input class="scba-form-input" id="sf_serial" value="${v('serial')}" placeholder="Serial #"></div>
+      <div class="scba-form-field"><label class="scba-form-label">Assigned To</label>
+        <select class="scba-form-select" id="sf_assigned"><option value="">Unassigned</option>${ROSTER.map(m=>`<option value="${m.name}" ${v('assigned')===m.name?'selected':''}>${m.name}</option>`).join('')}</select>
+      </div>
+      <div class="scba-form-field"><label class="scba-form-label">Purchase Date</label><input class="scba-form-input" id="sf_purchaseDate" type="date" value="${v('purchaseDate')}"></div>
+      <div class="scba-form-field full"><label class="scba-form-label">Last Flow Test Date</label><input class="scba-form-input" id="sf_lastFlowTest" type="date" value="${v('lastFlowTest')}"></div>
+      <div class="scba-form-field full" style="flex-direction:row;align-items:center;gap:10px;">
+        <input type="checkbox" id="sf_oos" ${v('oos')?'checked':''} style="width:18px;height:18px;">
+        <label class="scba-form-label" for="sf_oos" style="cursor:pointer;">Out of Service</label>
+      </div>
+      <div class="scba-form-field full"><label class="scba-form-label">Notes</label><input class="scba-form-input" id="sf_notes" value="${v('notes')}" placeholder="Optional notes..."></div>
+    </div>
+    <div class="btn-row"><button class="btn-secondary" onclick="closeScbaModal()">Cancel</button><button class="btn-primary" onclick="saveScbaRecord('pack','${rec?rec.id:''}')">Save</button></div>
+  `;
+  if(type==='cylinder') return`
+    <div class="scba-nfpa-note">DOT/TC hydrostatic test intervals: <strong>2216 PSI steel → every 5 years</strong> · <strong>4500 PSI composite → every 3 years</strong>. Composite cylinders retire at 15 years regardless of condition.</div>
+    <div class="scba-form-grid">
+      <div class="scba-form-field"><label class="scba-form-label">Cylinder ID / Tag #</label><input class="scba-form-input" id="sf_id" value="${v('id')}" placeholder="e.g. CYL-01"></div>
+      <div class="scba-form-field"><label class="scba-form-label">Type / Rated Pressure</label>
+        <select class="scba-form-select" id="sf_type"><option value="2216" ${v('type')==='2216'?'selected':''}>2216 PSI (Steel)</option><option value="4500" ${v('type')==='4500'||!rec?'selected':''}>4500 PSI (Composite)</option></select>
+      </div>
+      <div class="scba-form-field"><label class="scba-form-label">Serial Number</label><input class="scba-form-input" id="sf_serial" value="${v('serial')}" placeholder="DOT/TC serial #"></div>
+      <div class="scba-form-field"><label class="scba-form-label">Manufacturer</label><input class="scba-form-input" id="sf_manufacturer" value="${v('manufacturer')}" placeholder="e.g. Scott, Luxfer, Worthington"></div>
+      <div class="scba-form-field"><label class="scba-form-label">Manufacture Date</label><input class="scba-form-input" id="sf_mfgDate" type="date" value="${v('mfgDate')}"></div>
+      <div class="scba-form-field"><label class="scba-form-label">Last Hydrostatic Test Date</label><input class="scba-form-input" id="sf_hydroDate" type="date" value="${v('hydroDate')}"></div>
+      <div class="scba-form-field"><label class="scba-form-label">Assigned Pack</label><input class="scba-form-input" id="sf_assignedPack" value="${v('assignedPack')}" placeholder="e.g. PACK-01"></div>
+      <div class="scba-form-field"><label class="scba-form-label">Current Pressure (PSI)</label><input class="scba-form-input" id="sf_pressure" type="number" value="${v('pressure')}" placeholder="e.g. 4500"></div>
+      <div class="scba-form-field full"><label class="scba-form-label">Notes</label><input class="scba-form-input" id="sf_notes" value="${v('notes')}" placeholder="Optional notes..."></div>
+    </div>
+    <div class="btn-row"><button class="btn-secondary" onclick="closeScbaModal()">Cancel</button><button class="btn-primary" onclick="saveScbaRecord('cylinder','${rec?rec.id:''}')">Save</button></div>
+  `;
+  // mask
+  return`
+    <div class="scba-nfpa-note">OSHA 29 CFR 1910.134: Annual fit testing and medical clearance required per assigned member. Track by mask ID and assigned member.</div>
+    <div class="scba-form-grid">
+      <div class="scba-form-field"><label class="scba-form-label">Mask ID / Tag #</label><input class="scba-form-input" id="sf_id" value="${v('id')}" placeholder="e.g. MASK-01"></div>
+      <div class="scba-form-field"><label class="scba-form-label">Size</label>
+        <select class="scba-form-select" id="sf_size"><option value="S" ${v('size')==='S'?'selected':''}>Small</option><option value="M" ${v('size')==='M'||!rec?'selected':''}>Medium</option><option value="L" ${v('size')==='L'?'selected':''}>Large</option></select>
+      </div>
+      <div class="scba-form-field"><label class="scba-form-label">Manufacturer / Model</label><input class="scba-form-input" id="sf_model" value="${v('model')}" placeholder="e.g. Scott AV-3000"></div>
+      <div class="scba-form-field"><label class="scba-form-label">Serial Number</label><input class="scba-form-input" id="sf_serial" value="${v('serial')}" placeholder="Serial #"></div>
+      <div class="scba-form-field"><label class="scba-form-label">Assigned Member</label>
+        <select class="scba-form-select" id="sf_assigned"><option value="">Unassigned</option>${ROSTER.map(m=>`<option value="${m.name}" ${v('assigned')===m.name?'selected':''}>${m.name}</option>`).join('')}</select>
+      </div>
+      <div class="scba-form-field"><label class="scba-form-label">Last Fit Test Date</label><input class="scba-form-input" id="sf_lastFitTest" type="date" value="${v('lastFitTest')}"></div>
+      <div class="scba-form-field full" style="flex-direction:row;align-items:center;gap:10px;">
+        <input type="checkbox" id="sf_oos" ${v('oos')?'checked':''} style="width:18px;height:18px;">
+        <label class="scba-form-label" for="sf_oos" style="cursor:pointer;">Out of Service</label>
+      </div>
+      <div class="scba-form-field full"><label class="scba-form-label">Notes</label><input class="scba-form-input" id="sf_notes" value="${v('notes')}" placeholder="Optional notes..."></div>
+    </div>
+    <div class="btn-row"><button class="btn-secondary" onclick="closeScbaModal()">Cancel</button><button class="btn-primary" onclick="saveScbaRecord('mask','${rec?rec.id:''}')">Save</button></div>
+  `;
+}
+
+function saveScbaRecord(type, existingId){
+  const id=(document.getElementById('sf_id')?.value||'').trim();
+  if(!id){alert('ID is required.');return;}
+  function gv(f){const el=document.getElementById('sf_'+f);return el?el.value.trim():'';}
+  let rec={};
+  if(type==='pack') rec={id,manufacturer:gv('manufacturer'),model:gv('model'),serial:gv('serial'),assigned:gv('assigned'),purchaseDate:gv('purchaseDate'),lastFlowTest:gv('lastFlowTest'),oos:!!document.getElementById('sf_oos')?.checked,notes:gv('notes')};
+  if(type==='cylinder') rec={id,type:gv('type'),serial:gv('serial'),manufacturer:gv('manufacturer'),mfgDate:gv('mfgDate'),hydroDate:gv('hydroDate'),assignedPack:gv('assignedPack'),pressure:gv('pressure'),notes:gv('notes')};
+  if(type==='mask') rec={id,size:gv('size'),model:gv('model'),serial:gv('serial'),assigned:gv('assigned'),lastFitTest:gv('lastFitTest'),oos:!!document.getElementById('sf_oos')?.checked,notes:gv('notes')};
+  if(type==='pack'){
+    let arr=getScbaPacks();
+    if(existingId) arr=arr.filter(p=>p.id!==existingId);
+    arr.push(rec); scbaSave('packs',arr);
+    closeScbaModal(); renderScbaPacks();
+  } else if(type==='cylinder'){
+    let arr=getScbaCylinders();
+    if(existingId) arr=arr.filter(c=>c.id!==existingId);
+    arr.push(rec); scbaSave('cylinders',arr);
+    closeScbaModal(); renderScbaCylinders();
+  } else {
+    let arr=getScbaMasks();
+    if(existingId) arr=arr.filter(m=>m.id!==existingId);
+    arr.push(rec); scbaSave('masks',arr);
+    closeScbaModal(); renderScbaMasks();
+  }
+  toast(`${type==='pack'?'Pack':type==='cylinder'?'Cylinder':'Face piece'} ${id} saved.`,'success');
+}
+
+
+
+// ── Raw data from spreadsheet ──────────────────
+const HOSE_RAW = {
+  '1.75': [
+    {old:1,   newNum:null, years:{2021:'BAD',2022:'BAD'}},
+    {old:2,   newNum:null, years:{2021:'BAD',2022:'BAD'}},
+    {old:4,   newNum:101,  years:{2022:'Nov'}},
+    {old:5,   newNum:null, years:{2021:'Dec',2022:'BAD'}},
+    {old:6,   newNum:102,  years:{2021:'BAD',2022:'Nov'}},
+    {old:7,   newNum:103,  years:{2022:'Nov'}},
+    {old:9,   newNum:null, years:{2021:'BAD',2022:'BAD'}},
+    {old:10,  newNum:null, years:{2021:'BAD',2022:'BAD'}},
+    {old:11,  newNum:null, years:{2021:'BAD',2022:'BAD'}},
+    {old:12,  newNum:104,  years:{2022:'Nov'}},
+    {old:13,  newNum:105,  years:{2021:'Dec',2022:'Nov'}},
+    {old:14,  newNum:null, years:{2022:'BAD'}},
+    {old:16,  newNum:106,  years:{2021:'BAD',2022:'Nov'}},
+    {old:22,  newNum:null, years:{2022:'BAD'}},
+    {old:30,  newNum:107,  years:{2022:'Nov'}},
+    {old:51,  newNum:108,  years:{2022:'Nov'}},
+    {old:53,  newNum:null, years:{2022:'BAD'}},
+    {old:63,  newNum:null, years:{2021:'BAD',2022:'BAD'}},
+    {old:95,  newNum:109,  psi300:true, years:{2021:'Dec'}},
+    {old:96,  newNum:110,  psi300:true, years:{2021:'Dec'}},
+    {old:97,  newNum:111,  psi300:true, years:{}},
+    {old:98,  newNum:112,  psi300:true, years:{}},
+    {old:99,  newNum:113,  psi300:true, years:{}},
+    {old:100, newNum:114,  psi300:true, years:{2021:'Dec',2022:'Nov'}},
+    {old:101, newNum:115,  psi300:true, years:{}},
+    {old:102, newNum:116,  psi300:true, years:{}},
+    {old:103, newNum:117,  psi300:true, years:{}},
+    {old:104, newNum:118,  psi300:true, years:{}},
+    {old:105, newNum:119,  psi300:true, years:{}},
+    {old:106, newNum:120,  psi300:true, years:{}},
+    {old:107, newNum:121,  psi300:true, years:{}},
+    {old:108, newNum:122,  psi300:true, years:{}},
+    {old:109, newNum:123,  psi300:true, years:{}},
+    {old:110, newNum:124,  psi300:true, years:{}},
+    {old:111, newNum:125,  psi300:true, years:{}},
+    {old:112, newNum:126,  psi300:true, years:{}},
+    {old:113, newNum:127,  psi300:true, years:{}},
+    {old:114, newNum:128,  psi300:true, years:{}},
+    {old:115, newNum:129,  psi300:true, years:{}},
+    {old:116, newNum:130,  psi300:true, years:{}},
+    {old:117, newNum:131,  psi300:true, years:{}},
+    {old:118, newNum:132,  psi300:true, years:{}},
+    {old:119, newNum:133,  psi300:true, years:{}},
+    {old:120, newNum:134,  psi300:true, years:{}},
+    {old:121, newNum:135,  psi300:true, years:{}},
+    {old:122, newNum:136,  psi300:true, years:{}},
+    {old:123, newNum:137,  psi300:true, years:{}},
+    {old:124, newNum:138,  psi300:true, years:{}},
+    {old:125, newNum:139,  psi300:true, years:{}},
+    {old:126, newNum:140,  psi300:true, years:{}},
+    {old:127, newNum:141,  psi300:true, years:{}},
+    {old:128, newNum:142,  psi300:true, years:{}},
+    {old:129, newNum:143,  psi300:true, years:{}},
+    {old:130, newNum:144,  psi300:true, years:{}},
+    {old:131, newNum:145,  psi300:true, years:{}},
+    {old:132, newNum:146,  psi300:true, years:{}},
+    {old:133, newNum:null, psi300:true, years:{2021:'BAD',2022:'BAD'}},
+    {old:134, newNum:147,  psi300:true, years:{2021:'Dec',2022:'Nov'}},
+    {old:135, newNum:148,  psi300:true, years:{}},
+    {old:136, newNum:149,  psi300:true, years:{}},
+    {old:137, newNum:150,  psi300:true, years:{}},
+    {old:138, newNum:151,  psi300:true, years:{}},
+    {old:139, newNum:152,  psi300:true, years:{2021:'Dec'}},
+    {old:140, newNum:153,  psi300:true, years:{}},
+    {old:141, newNum:154,  psi300:true, years:{}},
+    {old:142, newNum:155,  psi300:true, years:{}},
+    {old:143, newNum:156,  psi300:true, years:{}},
+    {old:200, newNum:157,  years:{2020:'Oct'}},
+    {old:201, newNum:158,  years:{2020:'Oct',2021:'Dec'}},
+    {old:202, newNum:159,  years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:203, newNum:160,  years:{2020:'Oct'}},
+    {old:204, newNum:161,  years:{2020:'Oct'}},
+    {old:205, newNum:162,  years:{2020:'Oct'}},
+    {old:206, newNum:163,  years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:207, newNum:164,  years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:208, newNum:165,  years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:209, newNum:166,  years:{2020:'Oct',2021:'Dec'}},
+    {old:210, newNum:167,  years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:211, newNum:168,  years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:212, newNum:169,  years:{2020:'Oct',2022:'Nov'}},
+    {old:213, newNum:170,  years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:214, newNum:171,  years:{2021:'Dec',2022:'Nov'}},
+    {old:215, newNum:172,  years:{2021:'Dec'}},
+    {old:216, newNum:173,  years:{2021:'Dec'}},
+    {old:217, newNum:174,  years:{2021:'Dec',2022:'Nov'}},
+    {old:218, newNum:175,  years:{2021:'Dec'}},
+    {old:219, newNum:176,  years:{2021:'Dec',2022:'Nov'}},
+    {old:220, newNum:177,  years:{2021:'Dec'}},
+    {old:221, newNum:178,  years:{2021:'Dec',2022:'Nov'}},
+    {old:222, newNum:179,  years:{2021:'Dec',2022:'Nov'}},
+    {old:223, newNum:180,  years:{2021:'Dec'}},
+    {old:224, newNum:181,  years:{2021:'Dec',2022:'Nov'}},
+    {old:225, newNum:182,  years:{2021:'Dec',2022:'Nov'}},
+    {old:226, newNum:183,  years:{2021:'Dec',2022:'Nov'}},
+    {old:227, newNum:184,  years:{2021:'Dec',2022:'Nov'}},
+    {old:228, newNum:'REMOVED', years:{2021:'Dec',2024:'BAD'}},
+    {old:229, newNum:185,  years:{2021:'Dec'}},
+    {old:230, newNum:186,  years:{2021:'Dec'}},
+    {old:231, newNum:187,  years:{2021:'Dec',2022:'Nov'}},
+    {old:232, newNum:188,  years:{2021:'Dec'}},
+    {old:233, newNum:189,  years:{2021:'Dec',2022:'Nov'}},
+    {old:234, newNum:190,  years:{2021:'Dec'}},
+    {old:235, newNum:191,  years:{2021:'Dec'}},
+    {old:236, newNum:192,  years:{2021:'Dec'}},
+    {old:237, newNum:193,  years:{2021:'Dec',2022:'BAD'}},
+    {old:238, newNum:194,  years:{2021:'Dec',2022:'Nov'}},
+    {old:239, newNum:195,  years:{2021:'Dec',2022:'Nov'}},
+    {old:240, newNum:196,  years:{2021:'Dec'}},
+    {old:241, newNum:197,  years:{2021:'Dec',2022:'Nov'}},
+    {old:242, newNum:198,  years:{2021:'Jul'}},
+    {old:243, newNum:199,  years:{2021:'Jul'}},
+    {old:300, newNum:1001, years:{2022:'Nov'}},
+    {old:301, newNum:1002, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:302, newNum:1003, years:{2021:'Dec',2022:'Nov'}},
+    {old:303, newNum:1004, years:{2021:'Dec',2022:'Nov'}},
+    {old:304, newNum:1005, years:{2021:'Dec'}},
+    {old:305, newNum:1006, years:{2022:'Nov'}},
+    {old:306, newNum:1007, years:{2022:'Nov'}},
+    {old:307, newNum:1008, years:{2022:'Nov'}},
+    {old:308, newNum:1009, years:{2022:'Nov'}},
+    {old:311, newNum:1010, years:{2022:'Nov'}},
+  ],
+  '2.5': [
+    {old:1,  newNum:201, years:{2022:'Nov'}},
+    {old:2,  newNum:202, years:{2022:'Nov'}},
+    {old:3,  newNum:203, years:{2022:'Nov'}},
+    {old:4,  newNum:204, years:{2022:'Mar'}},
+    {old:5,  newNum:205, years:{2022:'Nov'}},
+    {old:6,  newNum:206, years:{2022:'Nov'}},
+    {old:7,  newNum:207, years:{2022:'Nov'}},
+    {old:8,  newNum:208, years:{2022:'Mar'}},
+    {old:9,  newNum:209, years:{2022:'Nov'}},
+    {old:10, newNum:210, years:{2022:'Nov'}},
+    {old:11, newNum:211, years:{}},
+    {old:12, newNum:212, years:{}},
+    {old:13, newNum:213, years:{}},
+    {old:14, newNum:214, years:{}},
+    {old:15, newNum:215, years:{}},
+    {old:16, newNum:216, years:{}},
+    {old:17, newNum:217, years:{}},
+    {old:18, newNum:218, years:{}},
+    {old:19, newNum:219, years:{}},
+    {old:20, newNum:220, years:{}},
+    {old:21, newNum:221, years:{}},
+    {old:22, newNum:222, years:{}},
+    {old:23, newNum:223, years:{}},
+    {old:24, newNum:224, years:{}},
+    {old:25, newNum:225, years:{}},
+    {old:26, newNum:226, years:{}},
+    {old:203,newNum:227, years:{2022:'Nov'}},
+    {old:204,newNum:228, years:{2022:'Nov'}},
+    {old:216,newNum:229, years:{2022:'Nov'}},
+  ],
+  '3': [
+    {old:1,  newNum:301,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:2,  newNum:302,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:3,  newNum:303,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:4,  newNum:304,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:5,  newNum:305,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'BAD'}},
+    {old:6,  newNum:306,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:7,  newNum:307,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:8,  newNum:308,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:9,  newNum:309,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:10, newNum:310,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:11, newNum:311,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:12, newNum:312,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:13, newNum:313,  psi200:true, years:{}},
+    {old:14, newNum:314,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:15, newNum:315,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:16, newNum:316,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:17, newNum:317,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:18, newNum:318,  psi200:true, years:{}},
+    {old:19, newNum:319,  psi200:true, years:{2022:'Nov'}},
+    {old:20, newNum:320,  psi200:true, years:{2021:'Dec'}},
+    {old:21, newNum:321,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:22, newNum:322,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:23, newNum:323,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:24, newNum:324,  psi200:true, years:{2021:'Dec',2022:'Nov'}},
+    {old:25, newNum:325,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:26, newNum:326,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:27, newNum:327,  psi200:true, years:{}},
+    {old:28, newNum:328,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:29, newNum:329,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:30, newNum:330,  psi200:true, years:{2021:'Dec'}},
+    {old:31, newNum:331,  psi200:true, years:{}},
+    {old:32, newNum:332,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:33, newNum:333,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:34, newNum:334,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:35, newNum:335,  psi200:true, years:{}},
+    {old:36, newNum:336,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:37, newNum:337,  psi200:true, years:{}},
+    {old:38, newNum:338,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:39, newNum:339,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:40, newNum:340,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:41, newNum:341,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:42, newNum:342,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:43, newNum:343,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:44, newNum:344,  psi200:true, years:{}},
+    {old:45, newNum:345,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:46, newNum:346,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:47, newNum:347,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'BAD'}},
+    {old:48, newNum:348,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:49, newNum:349,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:50, newNum:350,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:51, newNum:351,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:52, newNum:352,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:53, newNum:353,  psi200:true, years:{2020:'Oct',2021:'BAD',2022:'BAD'}},
+    {old:54, newNum:354,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:55, newNum:355,  psi200:true, years:{2020:'Oct',2021:'BAD'}},
+    {old:56, newNum:356,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:57, newNum:357,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:58, newNum:358,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:59, newNum:359,  psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:60, newNum:360,  psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:61, newNum:361,  psi200:true, years:{}},
+    {old:62, newNum:362,  psi200:true, years:{}},
+    {old:63, newNum:363,  psi200:true, years:{}},
+    {old:64, newNum:364,  psi200:true, years:{}},
+    {old:65, newNum:365,  psi200:true, years:{}},
+    {old:66, newNum:366,  psi200:true, years:{}},
+    {old:67, newNum:367,  psi200:true, years:{}},
+    {old:68, newNum:368,  psi200:true, years:{}},
+    {old:69, newNum:369,  psi200:true, years:{}},
+    {old:70, newNum:370,  psi200:true, years:{}},
+    {old:71, newNum:371,  psi200:true, years:{}},
+    {old:72, newNum:372,  psi200:true, years:{}},
+    {old:73, newNum:373,  psi200:true, years:{}},
+    {old:74, newNum:374,  psi200:true, years:{}},
+    {old:75, newNum:375,  psi200:true, years:{}},
+    {old:76, newNum:376,  psi200:true, years:{}},
+    {old:77, newNum:377,  psi200:true, years:{}},
+    {old:78, newNum:378,  psi200:true, years:{}},
+    {old:79, newNum:379,  psi200:true, years:{}},
+    {old:80, newNum:380,  psi200:true, years:{}},
+    {old:81, newNum:381,  psi200:true, years:{}},
+    {old:82, newNum:382,  psi200:true, years:{}},
+    {old:83, newNum:383,  psi200:true, years:{}},
+    {old:84, newNum:384,  psi200:true, years:{}},
+    {old:85, newNum:385,  psi200:true, years:{}},
+    {old:86, newNum:386,  psi200:true, years:{}},
+    {old:87, newNum:387,  psi200:true, years:{}},
+    {old:88, newNum:388,  psi200:true, years:{}},
+    {old:89, newNum:389,  psi200:true, years:{}},
+    {old:90, newNum:390,  psi200:true, years:{}},
+    {old:91, newNum:391,  psi200:true, years:{}},
+    {old:92, newNum:392,  psi200:true, years:{}},
+    {old:93, newNum:393,  psi200:true, years:{}},
+    {old:94, newNum:394,  psi200:true, years:{2021:'Dec'}},
+    {old:300,newNum:395,  years:{2021:'Dec'}},
+    {old:302,newNum:396,  years:{2021:'Dec'}},
+    {old:303,newNum:397,  years:{2021:'Dec'}},
+    {old:311,newNum:398,  years:{2021:'Dec'}},
+    {old:102,newNum:399,  years:{2021:'Dec'}},
+    {old:112,newNum:3001, years:{2021:'Dec',2022:'Nov'}},
+    {old:133,newNum:3002, years:{2021:'Dec',2022:'Nov'}},
+    {old:151,newNum:3003, years:{2021:'Dec'}},
+    {old:201,newNum:3004, psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:202,newNum:3005, psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:203,newNum:3006, psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:204,newNum:3007, psi200:true, years:{2020:'Oct',2021:'Dec'}},
+    {old:205,newNum:3008, psi200:true, years:{2020:'Oct',2021:'Dec',2022:'Nov'}},
+    {old:206,newNum:3009, years:{2021:'Jul',2022:'Nov'}},
+    {old:207,newNum:3010, years:{2021:'Jul',2022:'Nov'}},
+    {old:208,newNum:3011, years:{2021:'Jul',2022:'Nov'}},
+    {old:209,newNum:3012, years:{2021:'Jul'}},
+    {old:210,newNum:3013, years:{2021:'Jul',2022:'Nov'}},
+    {old:211,newNum:3014, years:{2021:'Jul',2022:'Nov'}},
+    {old:212,newNum:3015, years:{2021:'Jul',2022:'Nov'}},
+    {old:213,newNum:3016, years:{2021:'Jul'}},
+    {old:214,newNum:3017, years:{2021:'Jul'}},
+    {old:215,newNum:3018, years:{}},
+    {old:216,newNum:3019, years:{2021:'Dec',2022:'Nov'}},
+    {old:217,newNum:3020, years:{2022:'Nov'}},
+    {old:218,newNum:3021, years:{2022:'Nov'}},
+    {old:219,newNum:3022, years:{2022:'Nov'}},
+    {old:220,newNum:3023, years:{2022:'Nov'}},
+    {old:222,newNum:3024, years:{2022:'Nov'}},
+    {old:'T1',newNum:3026, years:{2022:'Nov'}},
+    {old:3027,newNum:3027, years:{}},
+    {old:3028,newNum:3028, years:{}},
+    {old:3029,newNum:3029, years:{}},
+    {old:3030,newNum:3030, years:{}},
+    {old:3031,newNum:3031, years:{}},
+    {old:3032,newNum:3032, years:{}},
+    {old:3033,newNum:3033, years:{}},
+    {old:3034,newNum:3034, years:{}},
+    {old:3035,newNum:3035, years:{}},
+    {old:3036,newNum:3036, years:{}},
+    {old:3037,newNum:3037, years:{}},
+    {old:3038,newNum:3038, years:{}},
+    {old:3039,newNum:3039, years:{}},
+    {old:3040,newNum:3040, years:{}},
+    {old:3041,newNum:3041, years:{}},
+    {old:3042,newNum:3042, years:{}},
+    {old:3043,newNum:3043, years:{}},
+    {old:3044,newNum:3044, years:{}},
+    {old:3045,newNum:3045, years:{}},
+    {old:3046,newNum:3046, years:{}},
+    {old:3047,newNum:3047, years:{}},
+    {old:3048,newNum:3048, years:{}},
+    {old:3049,newNum:3049, years:{}},
+    {old:3050,newNum:3050, years:{}},
+    {old:3051,newNum:3051, years:{}},
+    {old:3052,newNum:3052, years:{}},
+    {old:3053,newNum:3053, years:{}},
+    {old:3054,newNum:3054, years:{}},
+    {old:3055,newNum:3055, years:{}},
+  ]
+};
+
+// Merge in-session test records from localStorage
+function getHoseRecords(){
+  try{return JSON.parse(localStorage.getItem('qfd_hose_tests')||'[]');}catch{return[];}
+}
+function saveHoseRecord(rec){
+  const recs=getHoseRecords();recs.push(rec);localStorage.setItem('qfd_hose_tests',JSON.stringify(recs));
+}
+
+const HOSE_YEARS = [2020,2021,2022,2024,2025,2026];
+let hoseSize = '1.75';
+let hoseFilter = 'all';
+
+function initHoseModule(){
+  renderHoseSummary();
+  renderHoseTable();
+}
+
+function setHoseSize(sz, btn){
+  hoseSize = sz;
+  document.querySelectorAll('.hose-size-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHoseSummary();
+  renderHoseTable();
+}
+function setHoseFilter(f, btn){
+  hoseFilter = f;
+  document.querySelectorAll('.hose-status-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHoseTable();
+}
+
+function getHoseStatus(h){
+  // Check in-session records first
+  const recs = getHoseRecords().filter(r=>String(r.size)===String(hoseSize)&&String(r.hoseNum)===String(h.newNum||h.old));
+  if(recs.length){
+    const latest=recs[recs.length-1];
+    return latest.result==='PASS'?'pass':'fail';
+  }
+  if(h.newNum==='REMOVED') return 'removed';
+  const allVals = Object.values(h.years);
+  if(!allVals.length) return 'untested';
+  const latestYear = Math.max(...Object.keys(h.years).map(Number));
+  const latestVal = h.years[latestYear];
+  if(latestVal==='BAD') return 'fail';
+  if(latestVal && latestVal!=='BAD') return 'pass';
+  return 'untested';
+}
+
+function getLastTestYear(h){
+  const recs = getHoseRecords().filter(r=>String(r.size)===String(hoseSize)&&String(r.hoseNum)===String(h.newNum||h.old));
+  if(recs.length) return new Date(recs[recs.length-1].date).getFullYear();
+  const keys = Object.keys(h.years).map(Number).filter(y=>h.years[y]&&h.years[y]!='');
+  return keys.length?Math.max(...keys):null;
+}
+
+function renderHoseSummary(){
+  const data = HOSE_RAW[hoseSize];
+  const recs = getHoseRecords().filter(r=>String(r.size)===String(hoseSize));
+  const total = data.filter(h=>h.newNum!=='REMOVED').length;
+  let passed=0,failed=0,untested=0;
+  data.forEach(h=>{
+    const s=getHoseStatus(h);
+    if(s==='pass')passed++;
+    else if(s==='fail')failed++;
+    else if(s==='untested')untested++;
+  });
+  const psi = hoseSize==='3'?'200 PSI':'300 PSI';
+  document.getElementById('hoseSummary').innerHTML=`
+    <div class="hstat stat-blue"><div class="hstat-val">${total}</div><div class="hstat-lbl">Total Sections</div></div>
+    <div class="hstat stat-good"><div class="hstat-val">${passed}</div><div class="hstat-lbl">Last Test Passed</div></div>
+    <div class="hstat stat-bad"><div class="hstat-val">${failed}</div><div class="hstat-lbl">Failed / BAD</div></div>
+    <div class="hstat stat-warn"><div class="hstat-val">${untested}</div><div class="hstat-lbl">Never Tested</div></div>
+  `;
+}
+
+function yearCell(val, yearKey, extraRecs, hoseNum){
+  // Check session records for this year
+  const rec = extraRecs.find(r=>new Date(r.date).getFullYear()===yearKey);
+  if(rec){
+    const mo = new Date(rec.date).toLocaleString('en-US',{month:'short'});
+    return `<span class="hbadge hbadge-pass" title="Tested ${rec.date} by ${rec.tester||''}">${mo}</span>`;
+  }
+  if(!val) return `<span class="hbadge-none">—</span>`;
+  if(val==='BAD') return `<span class="hbadge hbadge-fail">BAD</span>`;
+  return `<span class="hbadge hbadge-pass">${val}</span>`;
+}
+
+function renderHoseTable(){
+  const data = HOSE_RAW[hoseSize];
+  const sessionRecs = getHoseRecords().filter(r=>String(r.size)===String(hoseSize));
+  const search = (document.getElementById('hoseSearch')?.value||'').toLowerCase();
+  let rows = data.filter(h=>{
+    if(h.newNum==='REMOVED') return false;
+    const s = getHoseStatus(h);
+    if(hoseFilter==='pass'&&s!=='pass') return false;
+    if(hoseFilter==='fail'&&s!=='fail') return false;
+    if(hoseFilter==='untested'&&s!=='untested') return false;
+    if(search&&!String(h.old).includes(search)&&!String(h.newNum||'').includes(search)) return false;
+    return true;
+  });
+
+  const psiLabel = hoseSize==='3'?'200 PSI':'300 PSI';
+  const removed = data.filter(h=>h.newNum==='REMOVED').length;
+
+  let html = `
+  ${removed?`<div style="font-size:12px;color:var(--text-dim);margin-bottom:10px;">⚠ ${removed} section(s) marked REMOVED are hidden from this list.</div>`:''}
+  <div class="hose-table-wrap">
+  <table class="hose-table">
+    <thead><tr>
+      <th>Old #</th>
+      <th>New #</th>
+      <th>Status</th>
+      ${HOSE_YEARS.map(y=>`<th class="hose-year-header">${y}</th>`).join('')}
+    </tr></thead>
+    <tbody>
+  `;
+
+  if(!rows.length){
+    html+=`<tr><td colspan="${4+HOSE_YEARS.length}" style="text-align:center;padding:32px;color:var(--text-muted);">No hose sections match this filter.</td></tr>`;
+  } else {
+    rows.forEach(h=>{
+      const s = getHoseStatus(h);
+      const hRecs = sessionRecs.filter(r=>String(r.hoseNum)===String(h.newNum||h.old));
+      let statusBadge='';
+      if(s==='pass') statusBadge=`<span class="hbadge hbadge-pass">✓ PASS</span>`;
+      else if(s==='fail') statusBadge=`<span class="hbadge hbadge-fail">✕ FAIL</span>`;
+      else statusBadge=`<span style="color:var(--text-dim);font-size:12px;">—</span>`;
+      
+      const lastY = getLastTestYear(h);
+      const age = lastY ? (new Date().getFullYear()-lastY) : null;
+      const ageNote = age===null?'':(age===0?'':age===1?` <span style="color:var(--amber);font-size:10px;">${age}yr ago</span>`:` <span style="color:var(--red);font-size:10px;">${age}yr ago</span>`);
+
+      html+=`<tr>
+        <td class="hose-num">${h.old}</td>
+        <td class="hose-num">${h.newNum||'—'}${ageNote}</td>
+        <td>${statusBadge}</td>
+        ${HOSE_YEARS.map(y=>`<td class="hose-year-cell">${yearCell(h.years[y]||null, y, hRecs, h.newNum||h.old)}</td>`).join('')}
+      </tr>`;
+    });
+  }
+  html+=`</tbody></table></div>`;
+  document.getElementById('hoseTableWrap').innerHTML=html;
+}
+
+function updatePsiNote(){
+  const sz=document.getElementById('htSize').value;
+  const psi=sz==='3'?'200':'300';
+  document.getElementById('hosePsiNote').innerHTML=`${sz==='1.75'?"1¾\"":sz==='2.5'?"2½\"":"3\""} hose tested at <strong>${psi} PSI</strong> for 3 minutes (NFPA 1962)`;
+}
+function openHoseTestModal(){
+  document.getElementById('htSize').value=hoseSize;
+  document.getElementById('htDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('htHoseNum').value='';
+  document.getElementById('htResult').value='PASS';
+  document.getElementById('htTester').value='';
+  document.getElementById('htPsi').value='';
+  document.getElementById('htNotes').value='';
+  updatePsiNote();
+  document.getElementById('hoseTestModal').classList.add('visible');
+}
+function closeHoseModal(){document.getElementById('hoseTestModal').classList.remove('visible');}
+function saveHoseTest(){
+  const num=document.getElementById('htHoseNum').value.trim();
+  const dt=document.getElementById('htDate').value;
+  const sz=document.getElementById('htSize').value;
+  if(!num){alert('Please enter a hose number.');return;}
+  if(!dt){alert('Please select a test date.');return;}
+  saveHoseRecord({
+    size:sz, hoseNum:num, date:dt,
+    result:document.getElementById('htResult').value,
+    tester:document.getElementById('htTester').value.trim(),
+    psi:document.getElementById('htPsi').value,
+    notes:document.getElementById('htNotes').value.trim(),
+    recorded:new Date().toISOString()
+  });
+  closeHoseModal();
+  if(sz!==hoseSize){
+    hoseSize=sz;
+    document.querySelectorAll('.hose-size-btn').forEach((b,i)=>{
+      b.classList.toggle('active',['1.75','2.5','3'][i]===sz);
+    });
+  }
+  renderHoseSummary();
+  renderHoseTable();
+  toast(`Test recorded for Hose #${num}!`,'success');
+}
+
+
 
 // ═══════════════════════════════════════════════
 // RUN STATS
