@@ -1046,23 +1046,6 @@ const HIST = {
       {name:'Clayton Hayes',   total:5,   months:[4,1,0,0,0,0,0,0,0,0,0,0]},
       {name:'Dominic Humble',  total:4,   months:[1,2,1,0,0,0,0,0,0,0,0,0]},
       {name:'Devin Cook',      total:1,   months:[0,0,0,1,0,0,0,0,0,0,0,0]},
-    ],
-    missed_list: [
-      {date:'2026-01-06',time:'15:21',   type:'Signal 82'},
-      {date:'2026-01-07',time:'16:02',      type:'Difficulty Breathing'},
-      {date:'2026-01-10',time:'03:30',         type:'General Weakness'},
-      {date:'2026-01-13',time:'09:51',            type:'Seizure'},
-      {date:'2026-01-13',time:'10:47',            type:'Seizure'},
-      {date:'2026-01-14',time:'08:57',      type:'Possible Stroke'},
-      {date:'2026-01-16',time:'13:12',       type:'Domestic'},
-      {date:'2026-01-17',time:'12:55',         type:'Stomach Pain'},
-      {date:'2026-01-20',time:'13:45',         type:'Chest Pain'},
-      {date:'2026-01-24',time:'08:11',         type:'Difficulty Breathing'},
-      {date:'2026-01-27',time:'10:21',      type:'General Weakness'},
-      {date:'2026-01-29',time:'08:26',           type:'Fall / Back Pain'},
-      {date:'2026-01-31',time:'09:17',      type:'Fire Alarm'},
-      {date:'2026-02-07',time:'01:30',      type:'Difficulty Breathing'},
-      {date:'2026-02-07',time:'08:48',      type:'Unresponsive'},
     ]
   }
 };
@@ -2699,33 +2682,13 @@ function renderMembers(){
 function renderMissed(){
   const el=document.getElementById('stats-missed');
   const y=HIST[selectedYear];
-  const hasList=y.missed_list&&y.missed_list.length>0;
   el.innerHTML=`
     <div class="year-selector">${YEARS.map(yr=>`<button class="year-btn ${yr===selectedYear?'active':''}" onclick="selectYear(${yr},'missed')">${yr}</button>`).join('')}</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
-      <div class="yscard"><div class="yscard-val" style="color:var(--amber);">${y.missedNote||y.missed||'—'}</div><div class="yscard-lbl">Missed ${selectedYear}${y.missedNote?' ('+y.missedNote+')':''}</div></div>
+      <div class="yscard"><div class="yscard-val" style="color:var(--amber);">${y.missedNote||y.missed||'—'}</div><div class="yscard-lbl">Missed ${selectedYear}</div></div>
       <div class="yscard"><div class="yscard-val">${y.total}</div><div class="yscard-lbl">Responded</div></div>
       <div class="yscard"><div class="yscard-val" style="color:${y.missed?'var(--amber)':'var(--text-muted)'};">${y.missed?(Math.round(y.missed/(y.total+y.missed)*100)+'%'):'—'}</div><div class="yscard-lbl">Miss Rate</div></div>
-    </div>
-    ${hasList?`
-    <div class="card">
-      <div class="card-header"><div class="card-title">${selectedYear} Missed Calls${y.missedNote?' · '+y.missedNote:''}</div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);">${y.missed_list.length} shown</span></div>
-      <table class="missed-table">
-        <thead><tr><th>Date</th><th>Time</th><th>Call Type</th></tr></thead>
-        <tbody>${y.missed_list.map(m=>`
-          <tr>
-            <td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${fmtDate(m.date)}</td>
-            <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);">${m.time}</td>
-            <td style="color:var(--amber);font-size:12px;">${m.type}</td>
-          </tr>`).join('')}
-        </tbody>
-      </table>
-    </div>`:`
-    <div class="card" style="padding:32px;text-align:center;color:var(--text-muted);">
-      <div style="font-size:36px;margin-bottom:12px;">📋</div>
-      <div style="font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">${y.missedNote||`${y.missed||0} missed calls recorded`}</div>
-      <div style="font-size:12px;">Detailed missed call log available for 2026.</div>
-    </div>`}`;
+    </div>`;
 }
 
 function selectYear(y,tab){
