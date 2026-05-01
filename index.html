@@ -910,7 +910,7 @@ function viewRun(id){
     <div class="detail-item detail-full"><div class="detail-label">Address</div><div class="detail-value">${r.address||'—'}</div></div>
     <div class="detail-item"><div class="detail-label">Call Type</div><div class="detail-value">${r.callType||'—'}</div></div>
     <div class="detail-item"><div class="detail-label">Report By</div><div class="detail-value">${r.reportBy||'—'}</div></div>`;
-  if(!isFire)h+=`<div class="detail-item"><div class="detail-label">Age</div><div class="detail-value">${r.patientAge||'—'}</div></div><div class="detail-item"><div class="detail-label">Gender</div><div class="detail-value">${r.patientGender||'—'}</div></div><div class="detail-item detail-full"><div class="detail-label">Chief Complaint</div><div class="detail-value">${r.chiefComplaint||'—'}</div></div><div class="detail-item detail-full"><div class="detail-label">EMS Service</div><div class="detail-value">${r.emsService||'—'}</div></div>`;
+  if(!isFire)h+=`<div class="detail-item detail-full"><div class="detail-label">Chief Complaint</div><div class="detail-value">${r.chiefComplaint||'—'}</div></div><div class="detail-item detail-full"><div class="detail-label">EMS Service</div><div class="detail-value">${r.emsService||'—'}</div></div>`;
   else{if(r.propertyLoss)h+=`<div class="detail-item"><div class="detail-label">Property Loss</div><div class="detail-value">$${r.propertyLoss}</div></div>`;if(r.acres)h+=`<div class="detail-item"><div class="detail-label">Acres</div><div class="detail-value">${r.acres}</div></div>`;}
   h+=`</div>`;
   h+=sec('Members Responding',chips(r.membersResponding||[]));
@@ -918,8 +918,7 @@ function viewRun(id){
   if((r.atStation||[]).length)h+=sec('At Station',chips(r.atStation));
   if(isFire&&(r.equipmentGeneral||[]).length)h+=sec('General Equipment',tags(r.equipmentGeneral));
   if(isFire&&(r.equipmentRescue||[]).length)h+=sec('Rescue Equipment',tags(r.equipmentRescue));
-  h+=`<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);display:flex;justify-content:space-between;"><span style="font-size:11px;color:var(--text-dim);">ID: ${r.id}</span><span style="font-size:11px;color:${r.nerisEntered==='Yes'?'#4ade80':'var(--text-dim)'};">${r.nerisEntered==='Yes'?'✓ NERIS':'○ NERIS unknown'}</span></div>`;
-  document.getElementById('modalBody').innerHTML=h;
+    document.getElementById('modalBody').innerHTML=h;
   document.getElementById('runModal').classList.add('visible');
 }
 function closeModal(){document.getElementById('runModal').classList.remove('visible');}
