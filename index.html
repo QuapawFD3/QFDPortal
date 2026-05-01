@@ -253,13 +253,13 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
         <div class="module-name">Truck Checks</div>
         <div class="module-desc">NFPA 1911 apparatus inspections</div>
       </a>
-      <div class="module-card" style="--module-color:#f59e0b" onclick="cs('Hose Checks','🚿','NFPA 1962 hose inventory, service testing, and certification records.',['Inventory by type and length','Annual service test log (300 PSI / 3 min)','Coupling and jacket condition tracking','Out-of-service flagging','Exportable test reports'])">
+      <div class="module-card" style="--module-color:#f59e0b" onclick="cs('hose')">
         <span class="module-badge badge-soon">SOON</span>
         <span class="module-icon">🚿</span>
         <div class="module-name">Hose Checks</div>
         <div class="module-desc">Inventory, service testing, NFPA 1962</div>
       </div>
-      <div class="module-card" style="--module-color:#2563eb" onclick="cs('SCBA Checks','😮‍💨','Dedicated SCBA unit tracking for all packs, cylinders, and face pieces.',['Per-pack inspection log','Cylinder hydro-test date tracking','Flow test scheduling and records','Face piece fit-test records','PASS device functional checks'])">
+      <div class="module-card" style="--module-color:#2563eb" onclick="cs('scba')">
         <span class="module-badge badge-soon">SOON</span>
         <span class="module-icon">😮‍💨</span>
         <div class="module-name">SCBA Checks</div>
@@ -274,19 +274,19 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
         <div class="module-name">Member Roster</div>
         <div class="module-desc">Contact directory, 26 active members</div>
       </div>
-      <div class="module-card" style="--module-color:#f59e0b" onclick="cs('Training Log','📚','Track individual and department-wide training hours, certifications, and compliance.',['Per-member training hour tracking','Certification and expiration records','OSDH compliance','Quarterly report export','Instructor-led session logs'])">
+      <div class="module-card" style="--module-color:#f59e0b" onclick="cs('training')">
         <span class="module-badge badge-soon">SOON</span>
         <span class="module-icon">📚</span>
         <div class="module-name">Training Log</div>
         <div class="module-desc">Hours, certs, compliance tracking</div>
       </div>
-      <div class="module-card" style="--module-color:#f59e0b" onclick="cs('Equipment Maintenance','🔧','Service and maintenance log for department equipment — generators, tools, SCBA compressor.',['Per-equipment service history','Scheduled maintenance reminders','Out-of-service status flags','Repair cost tracking','Warranty and purchase records'])">
+      <div class="module-card" style="--module-color:#f59e0b" onclick="cs('equipment')">
         <span class="module-badge badge-soon">SOON</span>
         <span class="module-icon">🔧</span>
         <div class="module-name">Equipment Maintenance</div>
         <div class="module-desc">Service logs for tools and equipment</div>
       </div>
-      <div class="module-card" style="--module-color:#f59e0b" onclick="cs('Hydrant Map','💧','Track hydrant flow test results, maintenance status, and GPS locations.',['GPS-mapped hydrant locations','Flow test history (GPM / PSI)','Out-of-service flags','Annual ISO compliance reporting','Linked to district subscription data'])">
+      <div class="module-card" style="--module-color:#f59e0b" onclick="cs('hydrant')">
         <span class="module-badge badge-soon">SOON</span>
         <span class="module-icon">💧</span>
         <div class="module-name">Hydrant Map</div>
@@ -591,7 +591,22 @@ updateClock(); setInterval(updateClock,30000);
 
 function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById('view-'+id).classList.add('active');window.scrollTo(0,0);}
 function goHome(){showView('home');}
-function cs(t,i,s,f){document.getElementById('csInnerTitle').textContent=t;document.getElementById('csTitle').textContent=t;document.getElementById('csIcon').textContent=i;document.getElementById('csSub').textContent=s;document.getElementById('csFeatures').innerHTML=(f||[]).map(x=>`<div class="cs-feature">${x}</div>`).join('');showView('coming-soon');}
+const CS_DATA = {
+  hose:     {t:'Hose Checks',       i:'🚿', s:'NFPA 1962 hose inventory, service testing, and certification records.',        f:['Hose inventory by type and length','Annual service test log (300 PSI / 3 min)','Coupling and jacket condition tracking','Out-of-service flagging','Exportable test reports']},
+  scba:     {t:'SCBA Checks',       i:'💨', s:'Dedicated SCBA unit tracking for all packs, cylinders, and face pieces.',       f:['Per-pack inspection log','Cylinder hydro-test date tracking','Flow test scheduling and records','Face piece fit-test records','PASS device functional checks']},
+  training: {t:'Training Log',      i:'📚', s:'Track individual and department-wide training hours, certifications, and compliance.', f:['Per-member training hour tracking','Certification and expiration records','OSDH compliance','Quarterly report export','Instructor-led session logs']},
+  equipment:{t:'Equipment Maintenance',i:'🔧',s:'Service and maintenance log for department equipment — generators, tools, SCBA compressor.',f:['Per-equipment service history','Scheduled maintenance reminders','Out-of-service status flags','Repair cost tracking','Warranty and purchase records']},
+  hydrant:  {t:'Hydrant Map',       i:'💧', s:'Track hydrant flow test results, maintenance status, and GPS locations.',         f:['GPS-mapped hydrant locations','Flow test history (GPM / PSI)','Out-of-service flags','Annual ISO compliance reporting','Linked to district subscription data']},
+};
+function cs(key){
+  const d=CS_DATA[key]; if(!d) return;
+  document.getElementById('csInnerTitle').textContent=d.t;
+  document.getElementById('csTitle').textContent=d.t;
+  document.getElementById('csIcon').textContent=d.i;
+  document.getElementById('csSub').textContent=d.s;
+  document.getElementById('csFeatures').innerHTML=d.f.map(x=>`<div class="cs-feature">${x}</div>`).join('');
+  showView('coming-soon');
+}
 function openModule(mod){
   if(mod==='roster'){renderRoster();showView('roster');return;}
   if(mod==='run-log'){showView('run-log');ensureRunsLoaded();return;}
