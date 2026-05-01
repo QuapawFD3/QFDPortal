@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QFD | Department Portal</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -498,7 +497,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
       <button class="filter-btn active" onclick="setFilter('all',this)">All Runs</button>
       <button class="filter-btn" onclick="setFilter('fire',this)">🔥 Fire / Vehicle</button>
       <button class="filter-btn" onclick="setFilter('medical',this)">🚑 Medical</button>
-      <input class="filter-search" type="text" placeholder="Search address, type..." id="runSearch" oninput="applyFilters()">
+      <input class="filter-search" type="text" placeholder="Search call type, crew..." id="runSearch" oninput="applyFilters()">
     </div>
     <div id="runLogContent"><div class="loading-state"><div class="spinner"></div>Loading runs...</div></div>
   </div>
@@ -548,39 +547,23 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
   <div class="inner-header">
     <button class="back-btn" onclick="goHome()">← Back</button>
     <span class="inner-divider">/</span>
-    <span class="inner-title">Hydrant Map</span>
+    <span class="inner-title">Hydrant Flow Tests</span>
   </div>
   <div class="module-content">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:8px;">
       <div>
-        <div class="page-title">Hydrant Map & Flow Records</div>
-        <div class="page-sub">Town of Quapaw · GeoSafe Hydrant Locations · ISO / NFPA 291 Flow Test Data</div>
+        <div class="page-title">Hydrant Flow Test Records</div>
+        <div class="page-sub">ISO / NFPA 291 · JotForm records + locally recorded tests</div>
       </div>
     </div>
 
-    <!-- Map tabs -->
     <div class="tab-nav" style="margin-bottom:16px;">
-      <button class="tab-btn active" id="htab-map" onclick="setHydTab('map',this)">🗺 Map</button>
-      <button class="tab-btn" id="htab-list" onclick="setHydTab('list',this)">📋 Records</button>
+      <button class="tab-btn active" id="htab-list" onclick="setHydTab('list',this)">📋 Records</button>
       <button class="tab-btn" id="htab-test" onclick="setHydTab('test',this)">💧 Record Test</button>
     </div>
 
-    <!-- MAP PANEL -->
-    <div id="hyd-map-panel">
-      <div style="font-size:12px;color:var(--text-muted);background:rgba(37,99,235,.07);border:1px solid rgba(37,99,235,.2);border-radius:var(--radius);padding:9px 14px;margin-bottom:12px;">
-        💧 <strong>${HYDRANT_LOCATIONS.length} hydrants</strong> mapped from GeoSafe · Click any marker for details · Flow-tested hydrants shown in <span style="color:#4ade80;">green</span>
-      </div>
-      <!-- Legend -->
-      <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:var(--text-muted);">
-        <span><span style="display:inline-block;width:12px;height:12px;background:#ef4444;border-radius:2px;vertical-align:middle;margin-right:4px;"></span>Not flow tested</span>
-        <span><span style="display:inline-block;width:12px;height:12px;background:#16a34a;border-radius:2px;vertical-align:middle;margin-right:4px;"></span>Flow test on record</span>
-        <span><span style="display:inline-block;width:12px;height:12px;background:#f59e0b;border-radius:2px;vertical-align:middle;margin-right:4px;"></span>&lt;500 GPM</span>
-      </div>
-      <div id="hydrantMap" style="width:100%;height:520px;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;"></div>
-    </div>
-
     <!-- LIST PANEL -->
-    <div id="hyd-list-panel" style="display:none;">
+    <div id="hyd-list-panel">
       <div class="hyd-summary-row" id="hydSummaryRow"></div>
       <div class="hyd-detail-card" id="hydDetailCard">
         <div class="hyd-detail-header">
@@ -605,23 +588,17 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
         <div style="font-size:12px;color:var(--text-muted);background:rgba(37,99,235,.07);border:1px solid rgba(37,99,235,.2);border-radius:var(--radius);padding:10px 14px;margin-bottom:20px;line-height:1.6;">
           📋 <strong>NFPA 291 Flow Test Procedure:</strong> Open flow hydrant fully · Record static pressure before flow · Open test hydrant, record pitot and residual · Calculate flow using C×d²×√p formula · Tests require two hydrants minimum.
         </div>
-
-        <!-- Test form -->
         <div class="card" style="margin-bottom:16px;">
           <div class="card-header"><div class="card-title">Hydrant Identification</div></div>
           <div style="padding:18px 20px;">
             <div class="htest-form-grid">
               <div class="htest-field">
-                <label class="htest-label">Hydrant Location / ID</label>
-                <select class="htest-input" id="ftLocation" style="background:var(--surface2);">
-                  <option value="">— Select hydrant or type below —</option>
-                  <optgroup label="Known Hydrants">
-                  </optgroup>
-                </select>
+                <label class="htest-label">Hydrant Location</label>
+                <input class="htest-input" id="ftLocationCustom" placeholder="e.g. 3rd & Main St">
               </div>
               <div class="htest-field">
-                <label class="htest-label">Or Enter Custom Location</label>
-                <input class="htest-input" id="ftLocationCustom" placeholder="e.g. 3rd & Main St">
+                <label class="htest-label">Hydrant ID (optional)</label>
+                <input class="htest-input" id="ftHydrantId" placeholder="e.g. H-042">
               </div>
               <div class="htest-field">
                 <label class="htest-label">Date of Test</label>
@@ -645,7 +622,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
               </div>
               <div class="htest-field full">
                 <label class="htest-label">Test Purpose / Notes</label>
-                <input class="htest-input" id="ftPurpose" placeholder="Describe why this test was conducted, what hydrants were used for static vs pitot, etc.">
+                <input class="htest-input" id="ftPurpose" placeholder="Describe why this test was conducted, hydrants used for static vs pitot, etc.">
               </div>
             </div>
           </div>
@@ -654,22 +631,22 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
         <div class="card" style="margin-bottom:16px;">
           <div class="card-header"><div class="card-title">Pressure Readings</div></div>
           <div style="padding:18px 20px;">
-            <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Record pressures in PSI. Use a calibrated gauge. Pitot readings in PSI are converted to GPM using the discharge coefficient.</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px;">Record pressures in PSI. Use a calibrated gauge.</div>
             <div class="htest-form-grid">
               <div class="htest-field">
                 <label class="htest-label">Static Pressure (PSI)</label>
                 <input class="htest-input" id="ftStatic" type="number" min="0" max="200" step="0.5" placeholder="e.g. 62" oninput="updateHydCalc()">
-                <div style="font-size:11px;color:var(--text-dim);margin-top:3px;">Measured at residual hydrant before flowing</div>
+                <div style="font-size:11px;color:var(--text-dim);margin-top:3px;">Measured before flowing</div>
               </div>
               <div class="htest-field">
                 <label class="htest-label">Residual Pressure (PSI)</label>
                 <input class="htest-input" id="ftResidual" type="number" min="0" max="200" step="0.5" placeholder="e.g. 42" oninput="updateHydCalc()">
-                <div style="font-size:11px;color:var(--text-dim);margin-top:3px;">Measured while flowing (pressure drop)</div>
+                <div style="font-size:11px;color:var(--text-dim);margin-top:3px;">Measured while flowing</div>
               </div>
               <div class="htest-field">
                 <label class="htest-label">Pitot Pressure (PSI)</label>
                 <input class="htest-input" id="ftPitot" type="number" min="0" max="200" step="0.5" placeholder="e.g. 26" oninput="updateHydCalc()">
-                <div style="font-size:11px;color:var(--text-dim);margin-top:3px;">Measured at flowing (test) hydrant nozzle</div>
+                <div style="font-size:11px;color:var(--text-dim);margin-top:3px;">Measured at flowing nozzle</div>
               </div>
               <div class="htest-field">
                 <label class="htest-label">Nozzle Diameter (inches)</label>
@@ -677,18 +654,13 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
                   <option value="2.5">2½" (standard)</option>
                   <option value="4">4" (steamer)</option>
                   <option value="1.5">1½"</option>
-                  <option value="custom">Custom...</option>
                 </select>
-              </div>
-              <div class="htest-field" id="ftNozzleCustomWrap" style="display:none;">
-                <label class="htest-label">Custom Nozzle Diameter (in)</label>
-                <input class="htest-input" id="ftNozzleCustom" type="number" step="0.25" placeholder="inches" oninput="updateHydCalc()">
               </div>
               <div class="htest-field">
                 <label class="htest-label">Discharge Coefficient (C)</label>
                 <select class="htest-input" id="ftCoeff" style="background:var(--surface2);" onchange="updateHydCalc()">
                   <option value="0.9">0.90 — Smooth/rounded outlet</option>
-                  <option value="0.8" selected>0.80 — Square-cut outlet (most common)</option>
+                  <option value="0.8" selected>0.80 — Square-cut (most common)</option>
                   <option value="0.7">0.70 — Projecting / rough outlet</option>
                 </select>
               </div>
@@ -696,11 +668,10 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
           </div>
         </div>
 
-        <!-- Calculated results card -->
-        <div class="card" style="margin-bottom:16px;" id="hydCalcCard">
+        <div class="card" style="margin-bottom:16px;">
           <div class="card-header"><div class="card-title">Calculated Results</div><span style="font-size:11px;color:var(--text-muted);">Updates automatically</span></div>
           <div style="padding:18px 20px;">
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;">
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px;">
               <div style="background:var(--surface2);border-radius:var(--radius);padding:14px;text-align:center;">
                 <div style="font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:var(--green);" id="calcFlowGPM">—</div>
                 <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-top:3px;">Flow (GPM)</div>
@@ -710,15 +681,13 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
                 <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-top:3px;">Pressure Drop (PSI)</div>
               </div>
               <div style="background:var(--surface2);border-radius:var(--radius);padding:14px;text-align:center;">
-                <div style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;" id="calcRating">—</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;" id="calcRating">—</div>
                 <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-top:3px;">ISO Rating</div>
               </div>
             </div>
-            <!-- Flow at 20 PSI residual -->
             <div style="background:var(--surface2);border-radius:var(--radius);padding:12px 16px;font-size:13px;" id="calcFlowAt20Wrap" style="display:none;">
-              <span style="color:var(--text-muted);">Projected flow at 20 PSI residual:</span>
+              <span style="color:var(--text-muted);">Projected flow at 20 PSI residual (ISO available flow):</span>
               <span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--amber);margin-left:8px;" id="calcFlowAt20">—</span>
-              <span style="color:var(--text-dim);font-size:11px;margin-left:4px;">GPM (ISO standard for available flow)</span>
             </div>
           </div>
         </div>
@@ -731,13 +700,13 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
                 <label class="htest-label">Overall Condition</label>
                 <select class="htest-input" id="ftCondition" style="background:var(--surface2);">
                   <option value="good">Good — No deficiencies</option>
-                  <option value="minor">Minor — Needs attention (non-critical)</option>
-                  <option value="major">Major — Repair required before use</option>
+                  <option value="minor">Minor — Needs attention</option>
+                  <option value="major">Major — Repair required</option>
                   <option value="oos">Out of Service</option>
                 </select>
               </div>
               <div class="htest-field">
-                <label class="htest-label">Nozzle Size Rating (field assessment)</label>
+                <label class="htest-label">Flow Rating (field assessment)</label>
                 <select class="htest-input" id="ftNozzleRate" style="background:var(--surface2);">
                   <option value="1,500 gpm or greater">≥ 1,500 GPM</option>
                   <option value="1,000 gpm or greater">≥ 1,000 GPM</option>
@@ -747,7 +716,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
               </div>
               <div class="htest-field full">
                 <label class="htest-label">Deficiencies / Observations</label>
-                <input class="htest-input" id="ftDeficiencies" placeholder="e.g. Slow-operating stem nut, minor rust on bonnet, paint worn, outlets clear...">
+                <input class="htest-input" id="ftDeficiencies" placeholder="e.g. Slow stem nut, minor rust, outlets clear...">
               </div>
             </div>
           </div>
@@ -1079,21 +1048,21 @@ const HIST = {
       {name:'Devin Cook',      total:1,   months:[0,0,0,1,0,0,0,0,0,0,0,0]},
     ],
     missed_list: [
-      {date:'2026-01-06',time:'15:21',address:'Hwy 69A & S 600 Rd.',   type:'Signal 82'},
-      {date:'2026-01-07',time:'16:02',address:'407 Whitebird St.',      type:'Difficulty Breathing'},
-      {date:'2026-01-10',time:'03:30',address:'61851 E 94 Rd.',         type:'General Weakness'},
-      {date:'2026-01-13',time:'09:51',address:'203 N Maple',            type:'Seizure'},
-      {date:'2026-01-13',time:'10:47',address:'203 N Maple',            type:'Seizure'},
-      {date:'2026-01-14',time:'08:57',address:'407 Whitebird St.',      type:'Possible Stroke'},
-      {date:'2026-01-16',time:'13:12',address:'310 Virginia St.',       type:'Domestic'},
-      {date:'2026-01-17',time:'12:55',address:'7901 S 620 Rd.',         type:'Stomach Pain'},
-      {date:'2026-01-20',time:'13:45',address:'324 Seneca St.',         type:'Chest Pain'},
-      {date:'2026-01-24',time:'08:11',address:'204 E 10th St.',         type:'Difficulty Breathing'},
-      {date:'2026-01-27',time:'10:21',address:'407 Whitebird St.',      type:'General Weakness'},
-      {date:'2026-01-29',time:'08:26',address:'326 Main St.',           type:'Fall / Back Pain'},
-      {date:'2026-01-31',time:'09:17',address:'407 Whitebird St.',      type:'Fire Alarm'},
-      {date:'2026-02-07',time:'01:30',address:'407 Whitebird St.',      type:'Difficulty Breathing'},
-      {date:'2026-02-07',time:'08:48',address:'407 Whitebird St.',      type:'Unresponsive'},
+      {date:'2026-01-06',time:'15:21',   type:'Signal 82'},
+      {date:'2026-01-07',time:'16:02',      type:'Difficulty Breathing'},
+      {date:'2026-01-10',time:'03:30',         type:'General Weakness'},
+      {date:'2026-01-13',time:'09:51',            type:'Seizure'},
+      {date:'2026-01-13',time:'10:47',            type:'Seizure'},
+      {date:'2026-01-14',time:'08:57',      type:'Possible Stroke'},
+      {date:'2026-01-16',time:'13:12',       type:'Domestic'},
+      {date:'2026-01-17',time:'12:55',         type:'Stomach Pain'},
+      {date:'2026-01-20',time:'13:45',         type:'Chest Pain'},
+      {date:'2026-01-24',time:'08:11',         type:'Difficulty Breathing'},
+      {date:'2026-01-27',time:'10:21',      type:'General Weakness'},
+      {date:'2026-01-29',time:'08:26',           type:'Fall / Back Pain'},
+      {date:'2026-01-31',time:'09:17',      type:'Fire Alarm'},
+      {date:'2026-02-07',time:'01:30',      type:'Difficulty Breathing'},
+      {date:'2026-02-07',time:'08:48',      type:'Unresponsive'},
     ]
   }
 };
@@ -1129,7 +1098,10 @@ function updateClock(){
   const n=new Date();
   document.getElementById('headerClock').textContent=n.toLocaleDateString('en-US',{month:'short',day:'numeric'})+'  '+n.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
 }
-updateClock(); setInterval(updateClock,30000);
+document.addEventListener('DOMContentLoaded', function(){
+  updateClock();
+  setInterval(updateClock, 30000);
+});
 
 function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById('view-'+id).classList.add('active');window.scrollTo(0,0);}
 function goHome(){showView('home');}
@@ -1165,103 +1137,18 @@ function openModule(mod){
 // ═══════════════════════════════════════════════
 
 // All hydrant locations georeferenced from GeoSafe screenshots
-const HYDRANT_LOCATIONS = [
-  // === CORE DOWNTOWN / NUMBERED STREETS ===
-  // 1st St area
-  {id:'H001', label:'1st & Quapaw St', lat:36.9476, lng:-94.6812, tested:true},
-  {id:'H002', label:'1st & Kentucky St', lat:36.9476, lng:-94.6828},
-  {id:'H003', label:'1st & Main (School side)', lat:36.9476, lng:-94.6845, tested:true},
-  {id:'H004', label:'W First St / McDonald Dr', lat:36.9499, lng:-94.6868},
-  {id:'H005', label:'E 40 Rd / W First St (East)', lat:36.9499, lng:-94.6848},
-
-  // 2nd St area
-  {id:'H006', label:'2nd & Quapaw St', lat:36.9463, lng:-94.6812},
-  {id:'H007', label:'2nd & Kentucky St', lat:36.9463, lng:-94.6828},
-  {id:'H008', label:'2nd & Virginia St', lat:36.9463, lng:-94.6842},
-
-  // 3rd St area
-  {id:'H009', label:'3rd & Quapaw St', lat:36.9450, lng:-94.6812, tested:true},
-  {id:'H010', label:'3rd & Kentucky St', lat:36.9450, lng:-94.6828},
-  {id:'H011', label:'3rd & Virginia St', lat:36.9450, lng:-94.6842},
-
-  // 4th St area
-  {id:'H012', label:'4th & Quapaw St', lat:36.9437, lng:-94.6812, tested:true},
-  {id:'H013', label:'4th & Kentucky St', lat:36.9437, lng:-94.6828},
-  {id:'H014', label:'W Fourth St / Cherry St', lat:36.9437, lng:-94.6856},
-  {id:'H015', label:'W Fourth St (near Elm)', lat:36.9437, lng:-94.6866},
-  {id:'H016', label:'4th & Whitebird St', lat:36.9437, lng:-94.6798, tested:true},
-  {id:'H017', label:'4th & Seneca St', lat:36.9437, lng:-94.6785},
-  {id:'H018', label:'4th & Cayuga St', lat:36.9437, lng:-94.6772},
-
-  // 5th St area
-  {id:'H019', label:'5th & Quapaw St', lat:36.9424, lng:-94.6812},
-  {id:'H020', label:'5th & Virginia St', lat:36.9424, lng:-94.6842},
-  {id:'H021', label:'W Fifth St (mid)', lat:36.9424, lng:-94.6850},
-  {id:'H022', label:'5th & Whitebird St', lat:36.9424, lng:-94.6798, tested:true},
-  {id:'H023', label:'5th & Cayuga St (upper)', lat:36.9430, lng:-94.6772},
-  {id:'H024', label:'5th & Cayuga St (lower)', lat:36.9418, lng:-94.6772},
-
-  // 6th St area
-  {id:'H025', label:'6th & Quapaw St', lat:36.9411, lng:-94.6812},
-  {id:'H026', label:'6th & Virginia St', lat:36.9411, lng:-94.6842},
-
-  // === SENECA ST CORRIDOR ===
-  {id:'H027', label:'Seneca St (north of 4th)', lat:36.9444, lng:-94.6785},
-  {id:'H028', label:'Seneca St (south of 4th)', lat:36.9432, lng:-94.6785},
-
-  // === WHITEBIRD ST CORRIDOR ===
-  {id:'H029', label:'Whitebird & 10th St', lat:36.9382, lng:-94.6798},
-  {id:'H030', label:'Whitebird (near 10th, east side)', lat:36.9382, lng:-94.6790},
-  {id:'H031', label:'Whitebird St (south, block 1)', lat:36.9367, lng:-94.6798},
-  {id:'H032', label:'Whitebird St (south, block 2)', lat:36.9353, lng:-94.6798},
-  {id:'H033', label:'Virginia St (south block 1)', lat:36.9367, lng:-94.6842},
-  {id:'H034', label:'Virginia St (south block 2)', lat:36.9353, lng:-94.6842},
-
-  // === N MAIN ST / S MAIN ST ===
-  {id:'H035', label:'Main & Elba St', lat:36.9527, lng:-94.6845},
-  {id:'H036', label:'Main & E 50 Rd', lat:36.9540, lng:-94.6845},
-
-  // === MORGAN / CLYMA / BEAVER / ELBA ===
-  {id:'H037', label:'Morgan & S Main St (west)', lat:36.9514, lng:-94.6855, tested:true},
-  {id:'H038', label:'Morgan & S Clyma St', lat:36.9514, lng:-94.6832, tested:true},
-  {id:'H039', label:'Melba & Clyma St', lat:36.9527, lng:-94.6832, tested:true},
-  {id:'H040', label:'Elba & S Clyma St', lat:36.9527, lng:-94.6818},
-
-  // === NORTH OF TOWN — E 40 RD / McDONALD DR ===
-  {id:'H041', label:'McDonald Dr (near school)', lat:36.9499, lng:-94.6858, tested:true},
-  {id:'H042', label:'McDonald Dr (north)', lat:36.9512, lng:-94.6858},
-  {id:'H043', label:'E 40 Rd & S 598 Rd area', lat:36.9499, lng:-94.6892},
-  {id:'H044', label:'N Maple St / E 40 Rd', lat:36.9499, lng:-94.6878},
-
-  // === BLUESTEM DR (NE / NW) ===
-  {id:'H045', label:'NE Bluestem Dr', lat:36.9538, lng:-94.6800, tested:true},
-  {id:'H046', label:'NW Bluestem Dr', lat:36.9538, lng:-94.6818, tested:true},
-
-  // === CAYUGA / NORTH CAYUGA ===
-  {id:'H047', label:'North Cayuga St', lat:36.9444, lng:-94.6765, tested:true},
-  {id:'H048', label:'South Cayuga St', lat:36.9418, lng:-94.6765, tested:true},
-
-  // === JACKSON ST / E 40 RD AREA ===
-  {id:'H049', label:'Jackson St & E 40 Rd', lat:36.9499, lng:-94.6838},
-  {id:'H050', label:'Kentucky St & W First (upper)', lat:36.9486, lng:-94.6828},
-  {id:'H051', label:'Kentucky St (near 1st Pl)', lat:36.9486, lng:-94.6820},
-
-  // === S 600 RD CORRIDOR ===
-  {id:'H052', label:'S 600 Rd & W Fifth St area', lat:36.9424, lng:-94.6870},
-  {id:'H053', label:'S 600 Rd (south)', lat:36.9404, lng:-94.6870},
-  {id:'H054', label:'S 600 Rd & E 40 Rd', lat:36.9499, lng:-94.6870},
-];
+const HYDRANT_LOCATIONS = []
 
 // Flow test records from JotForm
 const HYDRANT_TESTS = [
-  {id:'5752955404341049537', location:'301 McDonald Dr', lat:36.9499, lng:-94.6858, date:'2023-11-08', time:'17:00', testedBy:'Will Langley', witness:'Matt Lovell', purpose:'Rick Scott Construction requested a flow test for the fire hydrant in front of the Elementary School. Service line is a 6-inch line.', nozzleRate:'Smaller than 500 gpm', pitotGpm:43, staticPsi:58, residualDrop:null},
-  {id:'5757360514347098656', location:'3rd & Quapaw St', lat:36.9450, lng:-94.6812, date:'2023-11-13', time:'19:40', testedBy:'Jason Garrison', witness:'Jarrod McKibben', purpose:'Tested static and residual at 4th & Quapaw. Tested Pitot at 3rd & Quapaw.', nozzleRate:'1,000 gpm or greater', pitotGpm:40, staticPsi:58, residualDrop:54},
-  {id:'5757398744345572248', location:'4th & Whitebird St', lat:36.9437, lng:-94.6798, date:'2023-11-13', time:'20:50', testedBy:'Jason Garrison', witness:'Jarrod McKibben', purpose:'4th & Whitebird Pitot — 5th & Whitebird Static', nozzleRate:'1,000 gpm or greater', pitotGpm:36, staticPsi:58, residualDrop:50},
-  {id:'5759871672245271113', location:'McDonald Dr / 1st & Main', lat:36.9476, lng:-94.6845, date:'2023-11-16', time:'17:00', testedBy:'Jason Garrison', witness:'Jarrod McKibben', purpose:'McDonald Dr Pitot — 1st & Main (School Side) Static/Residual', nozzleRate:'500 to 1,000 gpm', pitotGpm:26, staticPsi:58, residualDrop:52},
-  {id:'5759872782247043631', location:'1st & Quapaw St', lat:36.9476, lng:-94.6812, date:'2023-11-16', time:'17:15', testedBy:'Jason Garrison', witness:'Jarrod McKibben', purpose:'1st & Quapaw — Static/Residual/Pitot', nozzleRate:'1,000 gpm or greater', pitotGpm:46, staticPsi:60, residualDrop:48},
-  {id:'5766128492247123839', location:'North Cayuga St', lat:36.9444, lng:-94.6765, date:'2023-11-22', time:'13:00', testedBy:'Jason Garrison', witness:'Trevor Brown', purpose:'North Cayuga Pitot — South Cayuga Static/Residual', nozzleRate:'500 to 1,000 gpm', pitotGpm:26, staticPsi:62, residualDrop:42},
-  {id:'5766130412247270560', location:'Morgan & Clyma', lat:36.9514, lng:-94.6832, date:'2023-11-22', time:'13:20', testedBy:'Jason Garrison', witness:'Trevor Brown', purpose:'Morgan & Clyma Pitot — Melba & Clyma Static/Residual', nozzleRate:'500 to 1,000 gpm', pitotGpm:16, staticPsi:64, residualDrop:24},
-  {id:'5766133402242316072', location:'NE Bluestem Dr', lat:36.9538, lng:-94.6800, date:'2023-11-22', time:'13:40', testedBy:'Jason Garrison', witness:'Trevor Brown', purpose:'NE Bluestem Dr Pitot — NW Bluestem Dr Static/Residual', nozzleRate:'1,000 gpm or greater', pitotGpm:36, staticPsi:64, residualDrop:38},
+  {id:'5752955404341049537', location:'301 McDonald Dr', lat:36.9630, lng:-94.7909, date:'2023-11-08', time:'17:00', testedBy:'Will Langley', witness:'Matt Lovell', purpose:'Rick Scott Construction requested a flow test for the fire hydrant in front of the Elementary School. Service line is a 6-inch line.', nozzleRate:'Smaller than 500 gpm', pitotGpm:43, staticPsi:58, residualDrop:null},
+  {id:'5757360514347098656', location:'3rd & Quapaw St', lat:36.9532, lng:-94.7891, date:'2023-11-13', time:'19:40', testedBy:'Jason Garrison', witness:'Jarrod McKibben', purpose:'Tested static and residual at 4th & Quapaw. Tested Pitot at 3rd & Quapaw.', nozzleRate:'1,000 gpm or greater', pitotGpm:40, staticPsi:58, residualDrop:54},
+  {id:'5757398744345572248', location:'4th & Whitebird St', lat:36.9518, lng:-94.7845, date:'2023-11-13', time:'20:50', testedBy:'Jason Garrison', witness:'Jarrod McKibben', purpose:'4th & Whitebird Pitot — 5th & Whitebird Static', nozzleRate:'1,000 gpm or greater', pitotGpm:36, staticPsi:58, residualDrop:50},
+  {id:'5759871672245271113', location:'McDonald Dr / 1st & Main', lat:36.9560, lng:-94.7873, date:'2023-11-16', time:'17:00', testedBy:'Jason Garrison', witness:'Jarrod McKibben', purpose:'McDonald Dr Pitot — 1st & Main (School Side) Static/Residual', nozzleRate:'500 to 1,000 gpm', pitotGpm:26, staticPsi:58, residualDrop:52},
+  {id:'5759872782247043631', location:'1st & Quapaw St', lat:36.9560, lng:-94.7891, date:'2023-11-16', time:'17:15', testedBy:'Jason Garrison', witness:'Jarrod McKibben', purpose:'1st & Quapaw — Static/Residual/Pitot', nozzleRate:'1,000 gpm or greater', pitotGpm:46, staticPsi:60, residualDrop:48},
+  {id:'5766128492247123839', location:'North Cayuga St', lat:36.9525, lng:-94.7800, date:'2023-11-22', time:'13:00', testedBy:'Jason Garrison', witness:'Trevor Brown', purpose:'North Cayuga Pitot — South Cayuga Static/Residual', nozzleRate:'500 to 1,000 gpm', pitotGpm:26, staticPsi:62, residualDrop:42},
+  {id:'5766130412247270560', location:'Morgan & Clyma', lat:36.9476, lng:-94.7855, date:'2023-11-22', time:'13:20', testedBy:'Jason Garrison', witness:'Trevor Brown', purpose:'Morgan & Clyma Pitot — Melba & Clyma Static/Residual', nozzleRate:'500 to 1,000 gpm', pitotGpm:16, staticPsi:64, residualDrop:24},
+  {id:'5766133402242316072', location:'NE Bluestem Dr', lat:36.9616, lng:-94.7845, date:'2023-11-22', time:'13:40', testedBy:'Jason Garrison', witness:'Trevor Brown', purpose:'NE Bluestem Dr Pitot — NW Bluestem Dr Static/Residual', nozzleRate:'1,000 gpm or greater', pitotGpm:36, staticPsi:64, residualDrop:38},
 ];
 
 let hydFilter = 'all';
@@ -1294,17 +1181,13 @@ function hydMatchesFilter(t) {
 function initHydrantModule() {
   renderHydSummary();
   renderHydTable();
-  // Delay map init until panel visible
-  setTimeout(initHydrantMap, 100);
 }
 
 function setHydTab(tab, btn) {
   document.querySelectorAll('#view-hydrant .tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('hyd-map-panel').style.display  = tab==='map'  ? '' : 'none';
   document.getElementById('hyd-list-panel').style.display = tab==='list' ? '' : 'none';
   document.getElementById('hyd-test-panel').style.display = tab==='test' ? '' : 'none';
-  if(tab==='map') setTimeout(()=>{ if(hydMapInstance) hydMapInstance.invalidateSize(); initHydrantMap(); }, 50);
   if(tab==='test') initHydTestForm();
   if(tab==='list') { renderHydSummary(); renderHydTable(); }
 }
@@ -1500,114 +1383,9 @@ function clearHydTestForm() {
 
 
 
-function initHydrantMap() {
-  if(!document.getElementById('hydrantMap')) return;
-  if(hydMapInitialized && hydMapInstance) { hydMapInstance.invalidateSize(); return; }
+function initHydrantMap(){}
 
-  // Load Leaflet dynamically
-  if(typeof L === 'undefined') {
-    const s = document.createElement('script');
-    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
-    s.onload = buildHydrantMap;
-    document.head.appendChild(s);
-  } else {
-    buildHydrantMap();
-  }
-}
-
-function buildHydrantMap() {
-  if(hydMapInitialized) return;
-  hydMapInitialized = true;
-
-  const map = L.map('hydrantMap', {
-    center: [36.9465, -94.6825],
-    zoom: 15,
-    zoomControl: true
-  });
-  hydMapInstance = map;
-
-  // Dark-friendly tile layer
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '© OpenStreetMap contributors © CARTO',
-    subdomains: 'abcd',
-    maxZoom: 19
-  }).addTo(map);
-
-  // Build a lookup of tested hydrant coords
-  const testedCoords = {};
-  HYDRANT_TESTS.forEach(t => { testedCoords[t.id] = {lat:t.lat, lng:t.lng, data:t}; });
-
-  // Map flow tests by approximate location for matching
-  const flowByHydrant = {};
-  HYDRANT_TESTS.forEach(t => {
-    const key = `${t.lat.toFixed(3)}_${t.lng.toFixed(3)}`;
-    flowByHydrant[key] = t;
-  });
-
-  // Custom SVG icon factory
-  function hydrantIcon(color, size=28) {
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 28 28">
-      <rect x="2" y="2" width="24" height="24" rx="4" fill="${color}" opacity="0.95"/>
-      <text x="14" y="20" font-size="14" text-anchor="middle" fill="white">💧</text>
-    </svg>`;
-    return L.divIcon({
-      html: `<div style="filter:drop-shadow(0 2px 4px rgba(0,0,0,0.6));">${svg}</div>`,
-      iconSize: [size, size],
-      iconAnchor: [size/2, size/2],
-      className: ''
-    });
-  }
-
-  // Plot all hydrants
-  HYDRANT_LOCATIONS.forEach(h => {
-    const locKey = `${h.lat.toFixed(3)}_${h.lng.toFixed(3)}`;
-    const flowTest = flowByHydrant[locKey];
-    let color = '#ef4444'; // default red — no test
-    let testInfo = '';
-
-    if(flowTest) {
-      const r = flowTest.nozzleRate;
-      if(r.includes('1,000') || r.includes('1,500')) color = '#16a34a'; // green — good flow
-      else if(r.includes('500 to')) color = '#d97706'; // amber — marginal
-      else color = '#dc2626'; // red — low flow
-      testInfo = `<div style="margin-top:6px;padding:6px 8px;background:rgba(0,0,0,0.3);border-radius:4px;font-size:11px;">
-        <div style="color:#9ca3af;">Flow Test: ${flowTest.date}</div>
-        <div style="color:#e5e7eb;">Pitot: <b>${flowTest.pitotGpm} GPM</b> · Static: <b>${flowTest.staticPsi} PSI</b></div>
-        <div style="color:#9ca3af;">By: ${flowTest.testedBy}</div>
-      </div>`;
-    }
-
-    const marker = L.marker([h.lat, h.lng], {icon: hydrantIcon(color)}).addTo(map);
-    marker.bindPopup(`
-      <div style="font-family:'Barlow',sans-serif;min-width:180px;color:#e5e7eb;background:#1f2937;padding:2px;">
-        <div style="font-weight:700;font-size:13px;margin-bottom:3px;color:#f9fafb;">💧 ${h.label}</div>
-        <div style="font-size:10px;color:#6b7280;letter-spacing:1px;text-transform:uppercase;">ID: ${h.id}</div>
-        ${flowTest ? testInfo : '<div style="margin-top:5px;font-size:11px;color:#9ca3af;">No flow test on record</div>'}
-      </div>
-    `, {
-      className: 'hyd-leaflet-popup'
-    });
-  });
-
-  // Also add tested-only markers with larger icons if not already in locations
-  // Add flow test location markers with pulsing ring for tested ones
-  HYDRANT_TESTS.forEach(t => {
-    const ring = L.circleMarker([t.lat, t.lng], {
-      radius: 16,
-      color: '#16a34a',
-      weight: 2,
-      fillColor: 'transparent',
-      fillOpacity: 0,
-      opacity: 0.5,
-      dashArray: '4 3'
-    }).addTo(map);
-  });
-
-  // Custom popup styling
-  const style = document.createElement('style');
-  style.textContent = `.hyd-leaflet-popup .leaflet-popup-content-wrapper{background:#1f2937;border:1px solid #374151;border-radius:6px;box-shadow:0 4px 20px rgba(0,0,0,0.6);color:#e5e7eb;padding:0;}.hyd-leaflet-popup .leaflet-popup-content{margin:10px 12px;}.hyd-leaflet-popup .leaflet-popup-tip{background:#1f2937;}.leaflet-popup-close-button{color:#9ca3af !important;}.leaflet-control-zoom a{background:#1f2937 !important;border-color:#374151 !important;color:#e5e7eb !important;}`;
-  document.head.appendChild(style);
-}
+function buildHydrantMap(){}
 
 function setHydFilter(f, btn) {
   hydFilter = f;
@@ -1628,7 +1406,7 @@ function renderHydSummary() {
   const highFlow  = tests.filter(t=>t.nozzleRate&&(t.nozzleRate.includes('1,000')||t.nozzleRate.includes('1,500'))).length;
   const localCount = tests.filter(t=>t.source==='local').length;
   document.getElementById('hydSummaryRow').innerHTML = `
-    <div class="hyd-stat hyd-blue"><div class="hyd-stat-val">${HYDRANT_LOCATIONS.length}</div><div class="hyd-stat-lbl">Hydrants Mapped</div></div>
+    <div class="hyd-stat hyd-blue"><div class="hyd-stat-val">${tests.length}</div><div class="hyd-stat-lbl">Tests on Record</div></div>
     <div class="hyd-stat hyd-green"><div class="hyd-stat-val">${tests.length}</div><div class="hyd-stat-lbl">Flow Tests${localCount?` <span style="font-size:10px;">(+${localCount} local)</span>`:''}
     </div></div>
     <div class="hyd-stat hyd-blue"><div class="hyd-stat-val">${avgStatic}</div><div class="hyd-stat-lbl">Avg Static PSI</div></div>
@@ -2933,12 +2711,11 @@ function renderMissed(){
     <div class="card">
       <div class="card-header"><div class="card-title">${selectedYear} Missed Calls${y.missedNote?' · '+y.missedNote:''}</div><span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);">${y.missed_list.length} shown</span></div>
       <table class="missed-table">
-        <thead><tr><th>Date</th><th>Time</th><th>Address</th><th>Call Type</th></tr></thead>
+        <thead><tr><th>Date</th><th>Time</th><th>Call Type</th></tr></thead>
         <tbody>${y.missed_list.map(m=>`
           <tr>
             <td style="font-family:'JetBrains Mono',monospace;font-size:11px;">${fmtDate(m.date)}</td>
             <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);">${m.time}</td>
-            <td>${m.address}</td>
             <td style="color:var(--amber);font-size:12px;">${m.type}</td>
           </tr>`).join('')}
         </tbody>
@@ -2975,24 +2752,63 @@ async function ensureRunsLoaded(){
   }
   try{
     document.getElementById('runLogContent').innerHTML=`<div class="loading-state"><div class="spinner"></div>Loading submissions...</div>`;
-    const [fs,ms]=await Promise.all([
-      fetch(`https://api.jotform.com/form/${FORM_FIRE}/submissions?apiKey=${JOTFORM_API_KEY}&limit=1000&offset=0&orderby=created_at,DESC`).then(r=>r.json()).then(d=>d.content||[]),
-      fetch(`https://api.jotform.com/form/${FORM_MED}/submissions?apiKey=${JOTFORM_API_KEY}&limit=1000&offset=0&orderby=created_at,DESC`).then(r=>r.json()).then(d=>d.content||[])
+
+    // Fetch each form independently so one failure doesn't kill both
+    async function fetchForm(formId, label){
+      if(!formId) return [];
+      try{
+        const r = await fetch(`https://api.jotform.com/form/${formId}/submissions?apiKey=${JOTFORM_API_KEY}&limit=1000&offset=0&orderby=created_at,DESC`);
+        if(!r.ok) throw new Error(`HTTP ${r.status}`);
+        const d = await r.json();
+        if(d.responseCode && d.responseCode !== 200) throw new Error(`JotForm ${d.responseCode}: ${d.message||'error'}`);
+        return d.content || [];
+      } catch(e){
+        console.warn(`Run log: ${label} form failed — ${e.message}`);
+        return [];
+      }
+    }
+
+    const [fs, ms] = await Promise.all([
+      fetchForm(FORM_FIRE, 'Fire/Vehicle'),
+      fetchForm(FORM_MED,  'Medical')
     ]);
-    allRuns=[...fs.map(parseFire),...ms.map(parseMed)].sort((a,b)=>new Date(b.created||b.date||0)-new Date(a.created||a.date||0));
-    runsLoaded=true;
-    document.getElementById('runLogSub').textContent=`${allRuns.length.toLocaleString()} total incidents`;
+
+    allRuns = [...fs.map(parseFire), ...ms.map(parseMed)]
+      .sort((a,b) => new Date(b.created||b.date||0) - new Date(a.created||a.date||0));
+
+    if(!allRuns.length){
+      document.getElementById('runLogContent').innerHTML=`<div class="empty-state">
+        <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
+        <div style="font-family:'Oswald',sans-serif;font-size:16px;text-transform:uppercase;margin-bottom:8px;">Could Not Load Runs</div>
+        <div style="font-size:13px;color:var(--text-muted);max-width:400px;line-height:1.6;">
+          JotForm API returned no records. This is usually caused by:<br>
+          • Running from a <code>file://</code> URL (CORS) — host on GitHub Pages or a server<br>
+          • API key expired or incorrect<br>
+          • JotForm form ID mismatch
+        </div>
+      </div>`;
+      return;
+    }
+
+    runsLoaded = true;
+    document.getElementById('runLogSub').textContent = `${allRuns.length.toLocaleString()} total incidents`;
     renderRunLog();
+
   }catch(err){
-    document.getElementById('runLogContent').innerHTML=`<div class="empty-state"><div style="font-size:40px;margin-bottom:12px;">⚠️</div><div style="font-family:'Oswald',sans-serif;font-size:16px;text-transform:uppercase;margin-bottom:4px;">Could Not Load</div><div style="font-size:13px;color:var(--text-muted);">${err.message}</div></div>`;
+    document.getElementById('runLogContent').innerHTML=`<div class="empty-state">
+      <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
+      <div style="font-family:'Oswald',sans-serif;font-size:16px;text-transform:uppercase;margin-bottom:8px;">Could Not Load</div>
+      <div style="font-size:13px;color:var(--text-muted);">${err.message}</div>
+      <div style="font-size:12px;color:var(--text-dim);margin-top:8px;">Check browser console for details.</div>
+    </div>`;
   }
 }
 function getDemoRuns(){
   const b=new Date(),d=n=>{const x=new Date(b);x.setDate(x.getDate()-n);return x.toISOString().split('T')[0];};
   return[
-    {id:'d1',type:'fire',date:d(2),timeCall:'14:32',timeArrival:'14:41',address:'1847 E 100 Rd, Quapaw OK',callType:'Structure Fire',reportBy:'Jason Garrison',membersResponding:['Jason Garrison','Casey Abernathy'],trucksUsed:['Engine 21','Engine 22'],created:d(2)},
-    {id:'d2',type:'medical',date:d(4),timeCall:'09:14',timeArrival:'09:22',address:'210 Main St, Quapaw OK',callType:'Medical',chiefComplaint:'Chest pain',patientAge:'67',reportBy:'Derek Boman',membersResponding:['Derek Boman','Will Langley'],emsService:'INTEGRIS EMS',created:d(4)},
-    {id:'d3',type:'fire',date:d(8),timeCall:'16:55',timeArrival:'17:04',address:'Hwy 69A MM 14, Quapaw OK',callType:'Vehicle Accident',reportBy:'Clayton Hayes',membersResponding:['Clayton Hayes','Cody Murphy'],trucksUsed:['Rescue 23'],created:d(8)},
+    {id:'d1',type:'fire',date:d(2),timeCall:'14:32',timeArrival:'14:41',callType:'Structure Fire',reportBy:'Jason Garrison',membersResponding:['Jason Garrison','Casey Abernathy'],trucksUsed:['Engine 21','Engine 22'],created:d(2)},
+    {id:'d2',type:'medical',date:d(4),timeCall:'09:14',timeArrival:'09:22',callType:'Medical',chiefComplaint:'Chest pain',patientAge:'67',reportBy:'Derek Boman',membersResponding:['Derek Boman','Will Langley'],emsService:'INTEGRIS EMS',created:d(4)},
+    {id:'d3',type:'fire',date:d(8),timeCall:'16:55',timeArrival:'17:04',callType:'Vehicle Accident',reportBy:'Clayton Hayes',membersResponding:['Clayton Hayes','Cody Murphy'],trucksUsed:['Rescue 23'],created:d(8)},
   ];
 }
 function setFilter(f,btn){activeFilter=f;displayCount=50;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');applyFilters();}
@@ -3001,7 +2817,7 @@ function applyFilters(){
   filteredRuns=allRuns.filter(r=>{
     if(activeFilter==='fire'&&r.type!=='fire')return false;
     if(activeFilter==='medical'&&r.type!=='medical')return false;
-    if(s&&!`${r.address} ${r.callType} ${r.reportBy}`.toLowerCase().includes(s))return false;
+    if(s&&!`${r.callType} ${r.reportBy}`.toLowerCase().includes(s))return false;
     return true;
   });
   renderRunTable();
@@ -3012,12 +2828,12 @@ function renderRunTable(){
   if(!filteredRuns.length){el.innerHTML=`<div class="empty-state"><div style="font-size:40px;margin-bottom:12px;">📋</div><div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;text-transform:uppercase;margin-bottom:4px;">No Runs Found</div></div>`;return;}
   const slice=filteredRuns.slice(0,displayCount);
   el.innerHTML=`<div class="run-table-wrap"><table class="run-table">
-    <thead><tr><th>Date / Time</th><th>Type</th><th>Address / Call Type</th><th>Crew</th><th>Report By</th><th></th></tr></thead>
+    <thead><tr><th>Date / Time</th><th>Type</th><th>Call Type</th><th>Crew</th><th>Report By</th><th></th></tr></thead>
     <tbody>${slice.map(r=>`
       <tr>
         <td style="font-family:'JetBrains Mono',monospace;font-size:11px;white-space:nowrap;">${fmtDate(r.date)}<br><span style="color:var(--text-dim)">${r.timeCall||''}</span></td>
         <td>${r.type==='fire'?`<span class="run-type-badge badge-fire">🔥 FIRE/VEH</span>`:`<span class="run-type-badge badge-medical">🚑 MEDICAL</span>`}</td>
-        <td><div style="font-size:13px;font-weight:500;">${r.address||'—'}</div><div style="font-size:11px;color:var(--text-muted);">${r.callType||''}</div></td>
+        <td><div style="font-size:13px;font-weight:500;">${r.callType||'—'}</div></td>
         <td style="font-size:12px;color:var(--text-muted);">${(r.membersResponding||[]).length?`${r.membersResponding.length} members`:'—'}</td>
         <td style="font-size:12px;color:var(--text-muted);">${r.reportBy||'—'}</td>
         <td><button class="card-action" onclick="viewRun('${r.id}')">View</button></td>
@@ -3039,7 +2855,7 @@ function viewRun(id){
     <div class="detail-item"><div class="detail-label">Time of Call</div><div class="detail-value">${r.timeCall||'—'}</div></div>
     <div class="detail-item"><div class="detail-label">Arrival</div><div class="detail-value">${r.timeArrival||'—'}</div></div>
     <div class="detail-item"><div class="detail-label">Cleared</div><div class="detail-value">${r.timeClear||'—'}</div></div>
-    <div class="detail-item detail-full"><div class="detail-label">Address</div><div class="detail-value">${r.address||'—'}</div></div>
+    
     <div class="detail-item"><div class="detail-label">Call Type</div><div class="detail-value">${r.callType||'—'}</div></div>
     <div class="detail-item"><div class="detail-label">Report By</div><div class="detail-value">${r.reportBy||'—'}</div></div>`;
   if(!isFire)h+=`<div class="detail-item detail-full"><div class="detail-label">Chief Complaint</div><div class="detail-value">${r.chiefComplaint||'—'}</div></div><div class="detail-item detail-full"><div class="detail-label">EMS Service</div><div class="detail-value">${r.emsService||'—'}</div></div>`;
