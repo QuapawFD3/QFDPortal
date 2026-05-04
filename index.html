@@ -454,6 +454,18 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
         <div class="module-name">SCBA Checks</div>
         <div class="module-desc">Packs, cylinders, masks · NFPA 1852</div>
       </div>
+      <div class="module-card" style="--module-color:#2563eb" onclick="openModule('hydrant')">
+        <span class="module-badge badge-live">LIVE</span>
+        <span class="module-icon">💧</span>
+        <div class="module-name">Hydrant Flow Tests</div>
+        <div class="module-desc">Map · Flow test records · Record new test</div>
+      </div>
+      <div class="module-card" style="--module-color:#f59e0b" onclick="cs('equipment')">
+        <span class="module-badge badge-soon">SOON</span>
+        <span class="module-icon">🔧</span>
+        <div class="module-name">Equipment Maintenance</div>
+        <div class="module-desc">Service logs for tools and equipment</div>
+      </div>
     </div>
     <div class="portal-section-label">Records & Admin</div>
     <div class="module-grid">
@@ -468,18 +480,6 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
         <span class="module-icon">📚</span>
         <div class="module-name">Training Log</div>
         <div class="module-desc">Hours, certs, compliance tracking</div>
-      </div>
-      <div class="module-card" style="--module-color:#f59e0b" onclick="cs('equipment')">
-        <span class="module-badge badge-soon">SOON</span>
-        <span class="module-icon">🔧</span>
-        <div class="module-name">Equipment Maintenance</div>
-        <div class="module-desc">Service logs for tools and equipment</div>
-      </div>
-      <div class="module-card" style="--module-color:#2563eb" onclick="openModule('hydrant')">
-        <span class="module-badge badge-live">LIVE</span>
-        <span class="module-icon">💧</span>
-        <div class="module-name">Hydrant Flow Tests</div>
-        <div class="module-desc">Map · Flow test records · Record new test</div>
       </div>
     </div>
   </div>
@@ -541,6 +541,55 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
     <div class="page-title">Active Roster</div>
     <div class="page-sub">Quapaw Volunteer Fire Department — 26 active members</div>
     <div class="roster-grid" id="rosterGrid"></div>
+  </div>
+</div>
+
+<!-- ══ SCBA CHECKS ════════════════════════════════════ -->
+<div class="view" id="view-scba">
+  <div class="inner-header">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <span class="inner-divider">/</span>
+    <span class="inner-title">SCBA Checks</span>
+  </div>
+  <div class="module-content">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+      <div>
+        <div class="page-title">SCBA Inventory & Inspection</div>
+        <div class="page-sub">NFPA 1852 · Packs, Cylinders (2216 &amp; 4500 PSI), Face Pieces · Annual flow test + monthly checks</div>
+      </div>
+    </div>
+    <div class="scba-tab-nav">
+      <button class="scba-tab-btn active" onclick="setScbaTab('packs',this)">😮‍💨 Packs</button>
+      <button class="scba-tab-btn" onclick="setScbaTab('cylinders',this)">🔴 Cylinders</button>
+      <button class="scba-tab-btn" onclick="setScbaTab('masks',this)">🥽 Face Pieces</button>
+      <button class="scba-tab-btn" onclick="setScbaTab('inspect',this)">✅ Run Inspection</button>
+    </div>
+    <div id="scba-packs-panel"></div>
+    <div id="scba-cylinders-panel" style="display:none;"></div>
+    <div id="scba-masks-panel" style="display:none;"></div>
+    <div id="scba-inspect-panel" style="display:none;"></div>
+  </div>
+</div>
+
+<!-- SCBA add/edit modal -->
+<div class="scba-modal-overlay" id="scbaModal">
+  <div class="scba-modal">
+    <div class="scba-modal-header">
+      <div class="modal-title" id="scbaModalTitle">Add Equipment</div>
+      <button class="modal-close" onclick="closeScbaModal()">✕</button>
+    </div>
+    <div class="scba-modal-body" id="scbaModalBody"></div>
+  </div>
+</div>
+
+<!-- SCBA inspection result modal -->
+<div class="scba-modal-overlay" id="scbaInspModal">
+  <div class="scba-modal">
+    <div class="scba-modal-header">
+      <div class="modal-title" id="scbaInspModalTitle">Inspection Complete</div>
+      <button class="modal-close" onclick="document.getElementById('scbaInspModal').classList.remove('visible')">✕</button>
+    </div>
+    <div class="scba-modal-body" id="scbaInspModalBody"></div>
   </div>
 </div>
 
@@ -745,55 +794,6 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
         </div>
       </div>
     </div>
-  </div>
-</div>
-
-<!-- ══ SCBA CHECKS ════════════════════════════════════ -->
-<div class="view" id="view-scba">
-  <div class="inner-header">
-    <button class="back-btn" onclick="goHome()">← Back</button>
-    <span class="inner-divider">/</span>
-    <span class="inner-title">SCBA Checks</span>
-  </div>
-  <div class="module-content">
-    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
-      <div>
-        <div class="page-title">SCBA Inventory & Inspection</div>
-        <div class="page-sub">NFPA 1852 · Packs, Cylinders (2216 &amp; 4500 PSI), Face Pieces · Annual flow test + monthly checks</div>
-      </div>
-    </div>
-    <div class="scba-tab-nav">
-      <button class="scba-tab-btn active" onclick="setScbaTab('packs',this)">😮‍💨 Packs</button>
-      <button class="scba-tab-btn" onclick="setScbaTab('cylinders',this)">🔴 Cylinders</button>
-      <button class="scba-tab-btn" onclick="setScbaTab('masks',this)">🥽 Face Pieces</button>
-      <button class="scba-tab-btn" onclick="setScbaTab('inspect',this)">✅ Run Inspection</button>
-    </div>
-    <div id="scba-packs-panel"></div>
-    <div id="scba-cylinders-panel" style="display:none;"></div>
-    <div id="scba-masks-panel" style="display:none;"></div>
-    <div id="scba-inspect-panel" style="display:none;"></div>
-  </div>
-</div>
-
-<!-- SCBA add/edit modal -->
-<div class="scba-modal-overlay" id="scbaModal">
-  <div class="scba-modal">
-    <div class="scba-modal-header">
-      <div class="modal-title" id="scbaModalTitle">Add Equipment</div>
-      <button class="modal-close" onclick="closeScbaModal()">✕</button>
-    </div>
-    <div class="scba-modal-body" id="scbaModalBody"></div>
-  </div>
-</div>
-
-<!-- SCBA inspection result modal -->
-<div class="scba-modal-overlay" id="scbaInspModal">
-  <div class="scba-modal">
-    <div class="scba-modal-header">
-      <div class="modal-title" id="scbaInspModalTitle">Inspection Complete</div>
-      <button class="modal-close" onclick="document.getElementById('scbaInspModal').classList.remove('visible')">✕</button>
-    </div>
-    <div class="scba-modal-body" id="scbaInspModalBody"></div>
   </div>
 </div>
 
@@ -2690,7 +2690,7 @@ function renderLeaderboard(){
     <div class="year-selector">${YEARS.map(y=>`<button class="year-btn ${y===selectedYear?'active':''}" onclick="selectYear(${y},'leaderboard')">${y}</button>`).join('')}</div>
     <div class="year-summary-cards" style="grid-template-columns:repeat(3,1fr);">
       <div class="yscard"><div class="yscard-val" style="color:var(--red);">${HIST[selectedYear].total}</div><div class="yscard-lbl">Total Runs</div></div>
-      <div class="yscard"><div class="yscard-val" style="color:${HIST[selectedYear].missed?'var(--amber)':'var(--text-muted)'};">${HIST[selectedYear].missedNote||HIST[selectedYear].missed||'—'}</div><div class="yscard-lbl">Missed Calls</div></div>
+      <div class="yscard"><div class="yscard-val" style="color:${HIST[selectedYear].missed?'var(--amber)':'var(--text-muted)'};">${HIST[selectedYear].missed||'—'}</div>${HIST[selectedYear].missedNote?`<div style="font-size:10px;color:var(--text-dim);margin-top:1px;">${HIST[selectedYear].missedNote}</div>`:''}<div class="yscard-lbl">Missed Calls</div></div>
       <div class="yscard"><div class="yscard-val">${sorted[0]?.total||'—'}</div><div class="yscard-lbl">Top Run Count</div></div>
     </div>
     <div class="card">
@@ -2759,7 +2759,7 @@ function renderMissed(){
   el.innerHTML=`
     <div class="year-selector">${YEARS.map(yr=>`<button class="year-btn ${yr===selectedYear?'active':''}" onclick="selectYear(${yr},'missed')">${yr}</button>`).join('')}</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
-      <div class="yscard"><div class="yscard-val" style="color:var(--amber);">${y.missedNote||y.missed||'—'}</div><div class="yscard-lbl">Missed ${selectedYear}</div></div>
+      <div class="yscard"><div class="yscard-val" style="color:var(--amber);">${y.missed||'—'}</div>${y.missedNote?`<div style="font-size:10px;color:var(--text-dim);margin-top:1px;">${y.missedNote}</div>`:''}<div class="yscard-lbl">Missed ${selectedYear}</div></div>
       <div class="yscard"><div class="yscard-val">${y.total}</div><div class="yscard-lbl">Responded</div></div>
       <div class="yscard"><div class="yscard-val" style="color:${y.missed?'var(--amber)':'var(--text-muted)'};">${y.missed?(Math.round(y.missed/(y.total+y.missed)*100)+'%'):'—'}</div><div class="yscard-lbl">Miss Rate</div></div>
     </div>`;
