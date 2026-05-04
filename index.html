@@ -414,7 +414,11 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
     <div class="portal-stats-bar">
       <div class="pstat"><div class="pstat-val">1,666</div><div class="pstat-lbl">Total Runs 2022–26</div></div>
       <div class="pstat-divider"></div>
-      <div class="pstat"><div class="pstat-val">129</div><div class="pstat-lbl">2026 YTD</div></div>
+      <div class="pstat"><div class="pstat-val" id="homeYTD">…</div><div class="pstat-lbl">2026 YTD Runs</div></div>
+      <div class="pstat-divider"></div>
+      <div class="pstat"><div class="pstat-val" id="homeMissed" style="color:var(--amber);">…</div><div class="pstat-lbl">2026 Missed</div></div>
+      <div class="pstat-divider"></div>
+      <div class="pstat"><div class="pstat-val" id="homeResponded" style="color:var(--green);">…</div><div class="pstat-lbl">2026 Responded</div></div>
       <div class="pstat-divider"></div>
       <div class="pstat"><div class="pstat-val">26</div><div class="pstat-lbl">Active Members</div></div>
       <div class="pstat-divider"></div>
@@ -422,7 +426,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
     </div>
   </div>
   <div class="portal-main">
-    <div class="portal-section-label">Operational Tools</div>
+    <div class="portal-section-label">Run Information</div>
     <div class="module-grid">
       <div class="module-card" style="--module-color:#dc2626" onclick="openModule('run-log')">
         <span class="module-badge badge-live">LIVE</span>
@@ -436,6 +440,9 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
         <div class="module-name">Run Statistics</div>
         <div class="module-desc">5-year history, member leaderboards, trends</div>
       </div>
+    </div>
+    <div class="portal-section-label">Operational Tools</div>
+    <div class="module-grid">
       <a class="module-card" href="https://checklist.quapawfire.com" style="--module-color:#dc2626">
         <span class="module-badge badge-live">LIVE</span>
         <span class="module-icon">🚒</span>
@@ -445,7 +452,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
       <div class="module-card" style="--module-color:#2563eb" onclick="openModule('hose')">
         <span class="module-badge badge-live">LIVE</span>
         <span class="module-icon">🚿</span>
-        <div class="module-name">Hose Tests</div>
+        <div class="module-name">Hose Checks</div>
         <div class="module-desc">Inventory, test history, NFPA 1962 records</div>
       </div>
       <div class="module-card" style="--module-color:#16a34a" onclick="openModule('scba')">
@@ -457,13 +464,13 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
       <div class="module-card" style="--module-color:#2563eb" onclick="openModule('hydrant')">
         <span class="module-badge badge-live">LIVE</span>
         <span class="module-icon">💧</span>
-        <div class="module-name">Hydrant Flow Tests</div>
+        <div class="module-name">Hydrant Checks</div>
         <div class="module-desc">Map · Flow test records · Record new test</div>
       </div>
       <div class="module-card" style="--module-color:#f59e0b" onclick="cs('equipment')">
         <span class="module-badge badge-soon">SOON</span>
         <span class="module-icon">🔧</span>
-        <div class="module-name">Equipment Maintenance</div>
+        <div class="module-name">Equipment Checks</div>
         <div class="module-desc">Service logs for tools and equipment</div>
       </div>
     </div>
@@ -1103,6 +1110,9 @@ function updateClock(){
 document.addEventListener('DOMContentLoaded', function(){
   updateClock();
   setInterval(updateClock, 30000);
+  // Kick off live 2026 data in the background so the home stat bar populates on load
+  load2026MissedCalls();
+  ensureRunsLoaded(true);
 });
 
 function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById('view-'+id).classList.add('active');window.scrollTo(0,0);}
@@ -2625,7 +2635,12 @@ function renderTrend(){
 
   const yearColors={2022:'#dc2626',2023:'#f59e0b',2024:'#2563eb',2025:'#16a34a',2026:'#8b5cf6'};
 
+  const _dbg = runsLoaded
+    ? `✅ ${allRuns.length} runs loaded · ${HIST[2026]._debugRunCount??'?'} matched 2026 · Jason: ${HIST[2026]._debugJason} · sample date: "${HIST[2026]._debugSampleDate??'none'}"`
+    : `⏳ Fetching live 2026 run data...`;
+
   el.innerHTML=`
+    <div style="background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.3);border-radius:6px;padding:7px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#60a5fa;margin-bottom:12px;" id="statsDebugBanner">${_dbg}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
       <div class="card">
         <div class="card-header"><div class="card-title">Annual Run Volume</div></div>
@@ -2825,6 +2840,18 @@ function selectYear(y,tab){
   renderStatsTab(tab);
 }
 
+// Update the portal home YTD stat bar with live 2026 data
+function updateHomeStats(){
+  const el = id => document.getElementById(id);
+  const responded = HIST[2026].total;                          // runs from JotForm (responded)
+  const missed    = HIST[2026].missed;                         // missed calls from missed form
+  const ytd       = (missed != null) ? responded + missed : null; // total = responded + missed
+
+  if(el('homeYTD'))       el('homeYTD').textContent       = ytd       != null ? ytd.toLocaleString()       : '…';
+  if(el('homeMissed'))    el('homeMissed').textContent     = missed    != null ? missed.toLocaleString()     : '…';
+  if(el('homeResponded')) el('homeResponded').textContent  = responded != null ? responded.toLocaleString() : '…';
+}
+
 // ═══════════════════════════════════════════════
 // 2026 LIVE DATA — Missed Calls + Member Stats
 // ═══════════════════════════════════════════════
@@ -2859,6 +2886,7 @@ async function load2026MissedCalls(){
     HIST[2026].missedNote = null;
     HIST[2026].missedDetails = details;
     HIST[2026].liveLoaded = true;
+    updateHomeStats();
 
     // Re-render if missed tab is currently visible
     if(selectedYear===2026 && currentStatsTab==='missed') renderMissed();
@@ -2876,18 +2904,14 @@ async function load2026MissedCalls(){
 
 // Called after allRuns loads — rebuilds 2026 member totals and monthly from live JotForm data
 function parseRunDate(dateStr){
-  // Handles: YYYY-MM-DD, MM/DD/YYYY, and YYYY-MM-DD HH:MM:SS (JotForm created_at)
   if(!dateStr) return null;
-  if(dateStr.includes('-')){
-    // YYYY-MM-DD or YYYY-MM-DD HH:MM:SS
-    const p=dateStr.split('T')[0].split(' ')[0].split('-');
-    if(p.length>=3) return {yr:p[0], mo:parseInt(p[1],10)-1};
-  }
-  if(dateStr.includes('/')){
-    // MM/DD/YYYY
-    const p=dateStr.split('/');
-    if(p.length>=3) return {yr:p[2].slice(0,4), mo:parseInt(p[0],10)-1};
-  }
+  // JotForm returns dates like "05 02 2026 2026-05-02 00:00:00" — a display
+  // format concatenated with an ISO timestamp. Pull out the YYYY-MM-DD part.
+  const isoMatch = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if(isoMatch) return {yr:isoMatch[1], mo:parseInt(isoMatch[2],10)-1};
+  // Fallback: MM/DD/YYYY
+  const mdyMatch = dateStr.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if(mdyMatch) return {yr:mdyMatch[3], mo:parseInt(mdyMatch[1],10)-1};
   return null;
 }
 
@@ -2897,12 +2921,29 @@ function compute2026MemberStats(){
     return d && d.yr==='2026';
   });
 
+  // Log first 3 2026 runs — members + date to diagnose counting
+  const sample2026 = runs2026.slice(0,3).map(r=>({
+    date: r.date,
+    members: r.membersResponding,
+    atStation: r.atStation,
+  }));
+  console.log('QFD 2026 sample runs:', JSON.stringify(sample2026));
+
+  // Count Jason specifically so we can see what's being counted
+  const jasonRuns = runs2026.filter(r=>{
+    const all = new Set([...(r.membersResponding||[]),...(r.atStation||[])].map(n=>n.trim()));
+    return [...all].some(n=>n.includes('Jason'));
+  });
+  console.log(`QFD: ${runs2026.length} 2026 runs total, Jason in ${jasonRuns.length}`);
+
   // Build member totals + monthly breakdowns
   const memberMap = {};
   runs2026.forEach(r=>{
-    // Only count membersResponding — atStation is who was at the station,
-    // not who ran the call. Merging both double-counts anyone in both lists.
-    const members = (r.membersResponding||[]);
+    // Count membersResponding UNION atStation — a member gets credit once per call
+    // whether they responded or were at the station, but not both.
+    const responding = new Set((r.membersResponding||[]).map(n=>n.trim()).filter(Boolean));
+    (r.atStation||[]).forEach(n=>{ n=n.trim(); if(n) responding.add(n); });
+    const members = [...responding];
     const d=parseRunDate(r.date||r.created||'');
     const mo = d ? d.mo : -1;
     if(mo<0||mo>11) return;
@@ -2926,6 +2967,10 @@ function compute2026MemberStats(){
   HIST[2026].total   = runs2026.length;
   HIST[2026].monthly = monthly;
   HIST[2026].members = Object.values(memberMap).sort((a,b)=>b.total-a.total);
+  HIST[2026]._debugRunCount = runs2026.length;
+  HIST[2026]._debugSampleDate = allRuns[0]?.date || allRuns[0]?.created || 'none';
+  HIST[2026]._debugJason = memberMap['Jason Garrison']?.total ?? 'not found';
+  updateHomeStats();
 
   // Re-render current stats tab if it's a 2026 view
   if(selectedYear===2026){
