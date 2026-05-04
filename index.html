@@ -909,6 +909,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
 const JOTFORM_API_KEY = '792134ddfe36e6c11deafdf03af52071';
 const FORM_FIRE = '221616934825157';
 const FORM_MED  = '221566768228062';
+const FORM_MISSED = '261217539228055';
 
 // ═══════════════════════════════════════════════
 // HISTORICAL DATA — 2022–2026
@@ -1035,7 +1036,7 @@ const HIST = {
     ]
   },
   2026: {
-    total: 129, missed: 15, missedNote: 'YTD through April',
+    total: 129, missed: null, missedNote: 'Loading...', missedDetails: null, liveLoaded: false,
     monthly: [41,35,35,18,0,0,0,0,0,0,0,0],
     members: [
       {name:'Jason Garrison',  total:93,  months:[29,24,31,9,0,0,0,0,0,0,0,0]},
@@ -1125,7 +1126,14 @@ function cs(key){
 function openModule(mod){
   if(mod==='roster'){renderRoster();showView('roster');return;}
   if(mod==='run-log'){showView('run-log');ensureRunsLoaded();return;}
-  if(mod==='run-stats'){showView('run-stats');renderStatsTab('trend');return;}
+  if(mod==='run-stats'){
+    showView('run-stats');
+    renderStatsTab('trend');
+    if(!HIST[2026].liveLoaded) load2026MissedCalls();
+    // Always ensure runs are loaded so member stats can be computed from live data
+    ensureRunsLoaded(true); // true = stats mode, skip rendering run log
+    return;
+  }
   if(mod==='hydrant'){showView('hydrant');initHydrantModule();return;}
   if(mod==='scba'){showView('scba');initScbaModule();return;}
   if(mod==='hose'){showView('hose');initHoseModule();return;}
@@ -2684,13 +2692,17 @@ function renderTrend(){
 // ── Per-Year Leaderboard ─────────────────────────
 function renderLeaderboard(){
   const el=document.getElementById('stats-leaderboard');
+  if(selectedYear===2026 && !runsLoaded){
+    el.innerHTML=`<div class="year-selector">${YEARS.map(y=>`<button class="year-btn ${y===selectedYear?'active':''}" onclick="selectYear(${y},'leaderboard')">${y}</button>`).join('')}</div><div class="card" style="margin-top:4px;"><div style="padding:32px;text-align:center;"><div class="spinner" style="margin:0 auto 10px;"></div><div style="font-size:13px;color:var(--text-muted);">Loading live run data from JotForm...</div></div></div>`;
+    return;
+  }
   const sorted=[...HIST[selectedYear].members].sort((a,b)=>b.total-a.total);
   const max=sorted[0]?.total||1;
   el.innerHTML=`
     <div class="year-selector">${YEARS.map(y=>`<button class="year-btn ${y===selectedYear?'active':''}" onclick="selectYear(${y},'leaderboard')">${y}</button>`).join('')}</div>
     <div class="year-summary-cards" style="grid-template-columns:repeat(3,1fr);">
       <div class="yscard"><div class="yscard-val" style="color:var(--red);">${HIST[selectedYear].total}</div><div class="yscard-lbl">Total Runs</div></div>
-      <div class="yscard"><div class="yscard-val" style="color:${HIST[selectedYear].missed?'var(--amber)':'var(--text-muted)'};">${HIST[selectedYear].missed||'—'}</div>${HIST[selectedYear].missedNote?`<div style="font-size:10px;color:var(--text-dim);margin-top:1px;">${HIST[selectedYear].missedNote}</div>`:''}<div class="yscard-lbl">Missed Calls</div></div>
+      <div class="yscard"><div class="yscard-val" style="color:${HIST[selectedYear].missed?'var(--amber)':'var(--text-muted)'};">${HIST[selectedYear].missed??'…'}</div>${HIST[selectedYear].missedNote?`<div style="font-size:10px;color:var(--text-dim);margin-top:1px;">${HIST[selectedYear].missedNote}</div>`:''}<div class="yscard-lbl">Missed Calls</div></div>
       <div class="yscard"><div class="yscard-val">${sorted[0]?.total||'—'}</div><div class="yscard-lbl">Top Run Count</div></div>
     </div>
     <div class="card">
@@ -2738,6 +2750,10 @@ function renderMonthly(){
 // ── By Member Cards ───────────────────────────────
 function renderMembers(){
   const el=document.getElementById('stats-members');
+  if(selectedYear===2026 && !runsLoaded){
+    el.innerHTML=`<div class="year-selector">${YEARS.map(y=>`<button class="year-btn ${y===selectedYear?'active':''}" onclick="selectYear(${y},'members')">${y}</button>`).join('')}</div><div class="card" style="margin-top:4px;"><div style="padding:32px;text-align:center;"><div class="spinner" style="margin:0 auto 10px;"></div><div style="font-size:13px;color:var(--text-muted);">Loading live run data from JotForm...</div></div></div>`;
+    return;
+  }
   const sorted=[...HIST[selectedYear].members].sort((a,b)=>b.total-a.total);
   el.innerHTML=`
     <div class="year-selector">${YEARS.map(y=>`<button class="year-btn ${y===selectedYear?'active':''}" onclick="selectYear(${y},'members')">${y}</button>`).join('')}</div>
@@ -2756,18 +2772,166 @@ function renderMembers(){
 function renderMissed(){
   const el=document.getElementById('stats-missed');
   const y=HIST[selectedYear];
+
+  // For 2026, trigger live load if not yet done
+  if(selectedYear===2026 && !y.liveLoaded){
+    load2026MissedCalls();
+  }
+
+  const missedVal = y.missed!=null ? y.missed : '…';
+  const missedColor = y.missed ? 'var(--amber)' : 'var(--text-muted)';
+  const missRate = y.missed && y.total ? Math.round(y.missed/(y.total+y.missed)*100)+'%' : '—';
+
+  let detailHtml = '';
+  if(selectedYear===2026){
+    if(!y.liveLoaded){
+      detailHtml=`<div class="card" style="margin-top:12px;"><div style="padding:24px;text-align:center;"><div class="spinner" style="margin:0 auto 10px;"></div><div style="font-size:13px;color:var(--text-muted);">Loading live missed call records from JotForm...</div></div></div>`;
+    } else if(y.missedDetails && y.missedDetails.length){
+      detailHtml=`
+      <div class="card" style="margin-top:12px;">
+        <div class="card-header"><div class="card-title">2026 Missed Call Log</div><span style="font-size:11px;color:var(--text-dim);">Live from JotForm · ${y.missedDetails.length} records</span></div>
+        <div style="overflow-x:auto;">
+          <table class="leaderboard">
+            <thead><tr><th>Date</th><th>Time</th><th>Type</th><th>Address</th></tr></thead>
+            <tbody>
+              ${y.missedDetails.map(m=>`
+                <tr>
+                  <td style="font-family:'JetBrains Mono',monospace;font-size:12px;white-space:nowrap;">${m.date||'—'}</td>
+                  <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">${m.time||'—'}</td>
+                  <td style="font-size:13px;">${m.type||'—'}</td>
+                  <td style="font-size:12px;color:var(--text-muted);">${m.address||'—'}</td>
+                </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    } else {
+      detailHtml=`<div class="card" style="margin-top:12px;padding:20px;text-align:center;color:var(--text-muted);font-size:13px;">No missed call records found.</div>`;
+    }
+  }
+
   el.innerHTML=`
     <div class="year-selector">${YEARS.map(yr=>`<button class="year-btn ${yr===selectedYear?'active':''}" onclick="selectYear(${yr},'missed')">${yr}</button>`).join('')}</div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
-      <div class="yscard"><div class="yscard-val" style="color:var(--amber);">${y.missed||'—'}</div>${y.missedNote?`<div style="font-size:10px;color:var(--text-dim);margin-top:1px;">${y.missedNote}</div>`:''}<div class="yscard-lbl">Missed ${selectedYear}</div></div>
+      <div class="yscard"><div class="yscard-val" style="color:${missedColor};">${missedVal}</div>${y.missedNote&&y.liveLoaded===false||selectedYear!==2026?`<div style="font-size:10px;color:var(--text-dim);margin-top:1px;">${y.missedNote||''}</div>`:''}<div class="yscard-lbl">Missed ${selectedYear}</div></div>
       <div class="yscard"><div class="yscard-val">${y.total}</div><div class="yscard-lbl">Responded</div></div>
-      <div class="yscard"><div class="yscard-val" style="color:${y.missed?'var(--amber)':'var(--text-muted)'};">${y.missed?(Math.round(y.missed/(y.total+y.missed)*100)+'%'):'—'}</div><div class="yscard-lbl">Miss Rate</div></div>
-    </div>`;
+      <div class="yscard"><div class="yscard-val" style="color:${y.missed?'var(--amber)':'var(--text-muted)'};">${missRate}</div><div class="yscard-lbl">Miss Rate</div></div>
+    </div>
+    ${detailHtml}`;
 }
 
 function selectYear(y,tab){
   selectedYear=y;
   renderStatsTab(tab);
+}
+
+// ═══════════════════════════════════════════════
+// 2026 LIVE DATA — Missed Calls + Member Stats
+// ═══════════════════════════════════════════════
+
+let _missed2026Loading = false;
+
+async function load2026MissedCalls(){
+  if(_missed2026Loading || HIST[2026].liveLoaded) return;
+  _missed2026Loading = true;
+  try{
+    let all=[], offset=0;
+    while(true){
+      const r=await fetch(`https://api.jotform.com/form/${FORM_MISSED}/submissions?apiKey=${JOTFORM_API_KEY}&limit=100&offset=${offset}&orderby=created_at,DESC`);
+      const d=await r.json();
+      const batch=d.content||[];
+      all=all.concat(batch);
+      if(batch.length<100) break;
+      offset+=100;
+    }
+    // Parse each submission
+    const details = all.map(s=>{
+      const a=s.answers||{};
+      return {
+        date:  getAns(a,'date of missed') || getAns(a,'date'),
+        time:  getAns(a,'time of missed') || getAns(a,'time'),
+        type:  getAns(a,'type of call')   || getAns(a,'type'),
+        address: getAns(a,'address'),
+      };
+    }).filter(m=>m.date); // drop blanks
+
+    HIST[2026].missed = all.length;
+    HIST[2026].missedNote = null;
+    HIST[2026].missedDetails = details;
+    HIST[2026].liveLoaded = true;
+
+    // Re-render if missed tab is currently visible
+    if(selectedYear===2026 && currentStatsTab==='missed') renderMissed();
+    // Also refresh leaderboard summary card count
+    if(selectedYear===2026 && currentStatsTab==='leaderboard') renderLeaderboard();
+
+  }catch(e){
+    HIST[2026].missed = '?';
+    HIST[2026].missedNote = 'Load failed';
+    HIST[2026].liveLoaded = true;
+    if(selectedYear===2026 && currentStatsTab==='missed') renderMissed();
+  }
+  _missed2026Loading = false;
+}
+
+// Called after allRuns loads — rebuilds 2026 member totals and monthly from live JotForm data
+function parseRunDate(dateStr){
+  // Handles: YYYY-MM-DD, MM/DD/YYYY, and YYYY-MM-DD HH:MM:SS (JotForm created_at)
+  if(!dateStr) return null;
+  if(dateStr.includes('-')){
+    // YYYY-MM-DD or YYYY-MM-DD HH:MM:SS
+    const p=dateStr.split('T')[0].split(' ')[0].split('-');
+    if(p.length>=3) return {yr:p[0], mo:parseInt(p[1],10)-1};
+  }
+  if(dateStr.includes('/')){
+    // MM/DD/YYYY
+    const p=dateStr.split('/');
+    if(p.length>=3) return {yr:p[2].slice(0,4), mo:parseInt(p[0],10)-1};
+  }
+  return null;
+}
+
+function compute2026MemberStats(){
+  const runs2026 = allRuns.filter(r=>{
+    const d=parseRunDate(r.date||r.created||'');
+    return d && d.yr==='2026';
+  });
+
+  // Build member totals + monthly breakdowns
+  const memberMap = {};
+  runs2026.forEach(r=>{
+    // Only count membersResponding — atStation is who was at the station,
+    // not who ran the call. Merging both double-counts anyone in both lists.
+    const members = (r.membersResponding||[]);
+    const d=parseRunDate(r.date||r.created||'');
+    const mo = d ? d.mo : -1;
+    if(mo<0||mo>11) return;
+    members.forEach(name=>{
+      name = name.trim();
+      if(!name) return;
+      if(!memberMap[name]) memberMap[name]={name, total:0, months:Array(12).fill(0)};
+      memberMap[name].total++;
+      memberMap[name].months[mo]++;
+    });
+  });
+
+  // Rebuild monthly totals
+  const monthly = Array(12).fill(0);
+  runs2026.forEach(r=>{
+    const d=parseRunDate(r.date||r.created||'');
+    const mo = d ? d.mo : -1;
+    if(mo>=0&&mo<=11) monthly[mo]++;
+  });
+
+  HIST[2026].total   = runs2026.length;
+  HIST[2026].monthly = monthly;
+  HIST[2026].members = Object.values(memberMap).sort((a,b)=>b.total-a.total);
+
+  // Re-render current stats tab if it's a 2026 view
+  if(selectedYear===2026){
+    const tab = currentStatsTab;
+    if(['leaderboard','members','trend','monthly'].includes(tab)) renderStatsTab(tab);
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -2780,8 +2944,13 @@ function getArr(a,lbl){for(const q of Object.values(a)){if((q.text||'').toLowerC
 function parseFire(s){const a=s.answers||{};return{id:s.id,type:'fire',date:getAns(a,'date'),timeCall:getAns(a,'time of call'),timeArrival:getAns(a,'time of arrival'),timeClear:getAns(a,'time clear'),address:getAns(a,'address'),callType:getAns(a,'type of call'),summary:getAns(a,'summary'),reportBy:getAns(a,'report by'),membersResponding:getArr(a,'members responding'),atStation:getArr(a,'at station'),trucksUsed:getArr(a,'trucks used'),equipmentGeneral:getArr(a,'general equipment'),equipmentRescue:getArr(a,'rescue equipment'),scbaPacks:getAns(a,'scba packs'),scbaBottles:getAns(a,'scba bottles'),propertyLoss:getAns(a,'property loss'),acres:getAns(a,'acres'),nerisEntered:getAns(a,'neris'),created:s.created_at};}
 function parseMed(s){const a=s.answers||{};return{id:s.id,type:'medical',date:getAns(a,'date'),timeCall:getAns(a,'time of call'),timeArrival:getAns(a,'time of arrival'),timeClear:getAns(a,'time clear'),address:getAns(a,'address'),callType:'Medical',chiefComplaint:getAns(a,'chief complaint'),patientAge:getAns(a,'age'),patientGender:getAns(a,'gender'),pmh:getAns(a,'past medical'),summary:getAns(a,'summary'),reportBy:getAns(a,'report by'),emsService:getAns(a,'ems service'),membersResponding:getArr(a,'members responding'),atStation:getArr(a,'at station'),nerisEntered:getAns(a,'neris'),created:s.created_at};}
 
-async function ensureRunsLoaded(){
-  if(runsLoaded){renderRunLog();return;}
+async function ensureRunsLoaded(statsMode=false){
+  if(runsLoaded){
+    // Runs already in memory — just compute stats and render
+    if(!statsMode) renderRunLog();
+    compute2026MemberStats();
+    return;
+  }
   if(JOTFORM_API_KEY==='YOUR_JOTFORM_API_KEY'){
     allRuns=getDemoRuns();runsLoaded=true;renderRunLog();
     document.getElementById('runLogSub').innerHTML=`<span style="color:var(--amber)">⚠ Demo mode — add JotForm API key to pull live data</span>`;
@@ -2828,8 +2997,11 @@ async function ensureRunsLoaded(){
     }
 
     runsLoaded = true;
-    document.getElementById('runLogSub').textContent = `${allRuns.length.toLocaleString()} total incidents`;
-    renderRunLog();
+    if(!statsMode){
+      document.getElementById('runLogSub').textContent = `${allRuns.length.toLocaleString()} total incidents`;
+      renderRunLog();
+    }
+    compute2026MemberStats(); // rebuild live 2026 member stats from JotForm data
 
   }catch(err){
     document.getElementById('runLogContent').innerHTML=`<div class="empty-state">
