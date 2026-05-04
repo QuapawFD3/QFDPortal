@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QFD | Department Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 :root{
   --bg:#0d1117;--surface:#161b22;--surface2:#1f2937;--border:#30363d;
@@ -477,7 +479,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
         <span class="module-badge badge-live">LIVE</span>
         <span class="module-icon">💧</span>
         <div class="module-name">Hydrant Flow Tests</div>
-        <div class="module-desc">Flow test records, GPM, residual data</div>
+        <div class="module-desc">Map · Flow test records · Record new test</div>
       </div>
     </div>
   </div>
@@ -558,8 +560,23 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
     </div>
 
     <div class="tab-nav" style="margin-bottom:16px;">
-      <button class="tab-btn active" id="htab-list" onclick="setHydTab('list',this)">📋 Records</button>
+      <button class="tab-btn active" id="htab-map" onclick="setHydTab('map',this)">🗺️ Map</button>
+      <button class="tab-btn" id="htab-list" onclick="setHydTab('list',this)">📋 Records</button>
       <button class="tab-btn" id="htab-test" onclick="setHydTab('test',this)">💧 Record Test</button>
+    </div>
+
+    <!-- MAP PANEL -->
+    <div id="hyd-map-panel">
+      <div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);">
+          <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#2563eb;border:2px solid #93c5fd;flex-shrink:0;"></span>Flow Test on Record
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-muted);">
+          <span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#dc2626;border:2px solid #f87171;flex-shrink:0;"></span>Not Yet Tested
+        </div>
+        <div style="margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-dim);" id="hydMapCount"></div>
+      </div>
+      <div id="hydrantMapContainer" style="width:100%;height:560px;border-radius:8px;border:1px solid var(--border);overflow:hidden;"></div>
     </div>
 
     <!-- LIST PANEL -->
@@ -866,6 +883,7 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
   </div>
 </div>
 
+<!-- ══ FIRE SUBSCRIPTIONS ══════════════════════════════ -->
 <!-- ══ COMING SOON ════════════════════════════════════ -->
 <div class="view" id="view-coming-soon">
   <div class="inner-header">
@@ -1119,18 +1137,71 @@ function openModule(mod){
 // Flow test data from JotForm 233115988702157
 // ═══════════════════════════════════════════════
 
-// All hydrant locations georeferenced from GeoSafe screenshots
-const HYDRANT_LOCATIONS = []
+// All hydrant locations — coordinates placed manually by Jason Garrison 2026
+const HYDRANT_LOCATIONS = [
+  {id:'h01', label:'Main & Morgan St',              lat:36.940341, lng:-94.787548},
+  {id:'h02', label:'Morgan & Clyma St',             lat:36.940358, lng:-94.784027},
+  {id:'h03', label:'Melba & Clyma St',              lat:36.942330, lng:-94.783876},
+  {id:'h04', label:'Melba St',                      lat:36.942399, lng:-94.786357},
+  {id:'h05', label:'Future Farmer Rd.',             lat:36.943565, lng:-94.786228},
+  {id:'h06', label:'11th & Virginia St',            lat:36.945296, lng:-94.787087},
+  {id:'h07', label:'10th & Whitebird St',           lat:36.946136, lng:-94.785551},
+  {id:'h08', label:'10th & Virginia St',            lat:36.946338, lng:-94.786847},
+  {id:'h09', label:'8th & Virginia St',             lat:36.948250, lng:-94.786711},
+  {id:'h10', label:'South Post Office & Main St',   lat:36.950979, lng:-94.787988},
+  {id:'h11', label:'6th & Main St',                 lat:36.951476, lng:-94.787859},
+  {id:'h12', label:'Watertower & Whitebird St',     lat:36.951058, lng:-94.785600},
+  {id:'h13', label:'North Watertower & Whitebird St',lat:36.952160, lng:-94.785641},
+  {id:'h14', label:'5th & Whitebird St',            lat:36.952968, lng:-94.785772},
+  {id:'h15', label:'4th & Whitebird St',            lat:36.954417, lng:-94.785762},
+  {id:'h16', label:'4th & Seneca St',               lat:36.954764, lng:-94.784654},
+  {id:'h17', label:'North Seneca St',               lat:36.955655, lng:-94.784670},
+  {id:'h18', label:'4th & Cayuga St',               lat:36.954479, lng:-94.782830},
+  {id:'h19', label:'North Cayuga St',               lat:36.955118, lng:-94.782833},
+  {id:'h20', label:'3rd & Whitebird St',            lat:36.955941, lng:-94.785625},
+  {id:'h21', label:'1st & Whitebird St',            lat:36.958103, lng:-94.785842},
+  {id:'h22', label:'1st & Virginia St',             lat:36.958101, lng:-94.786839},
+  {id:'h23', label:'5th & Virginia St',             lat:36.952921, lng:-94.786834},
+  {id:'h24', label:'5th & Main St',                 lat:36.952987, lng:-94.787864},
+  {id:'h25', label:'4th & Main St',                 lat:36.954425, lng:-94.787870},
+  {id:'h26', label:'3rd & Main St',                 lat:36.956001, lng:-94.787872},
+  {id:'h27', label:'2nd & Main St',                 lat:36.957456, lng:-94.787870},
+  {id:'h28', label:'McDonald Dr / 1st St & Main St',lat:36.958159, lng:-94.788020},
+  {id:'h29', label:'301 McDonald Dr',               lat:36.960705, lng:-94.787990},
+  {id:'h30', label:'3rd & Kentucky St',             lat:36.956091, lng:-94.789016},
+  {id:'h31', label:'5th & Kentucky St',             lat:36.952858, lng:-94.789005},
+  {id:'h32', label:'6th & Quapaw St',               lat:36.951311, lng:-94.790249},
+  {id:'h33', label:'5th & Quapaw St',               lat:36.952640, lng:-94.790255},
+  {id:'h34', label:'4th & Quapaw St',               lat:36.954607, lng:-94.790260},
+  {id:'h35', label:'3rd & Quapaw St',               lat:36.956056, lng:-94.790120},
+  {id:'h36', label:'1st & Quapaw St',               lat:36.957925, lng:-94.790222},
+  {id:'h37', label:'4th & Elm St',                  lat:36.954423, lng:-94.791418},
+  {id:'h38', label:'5th & Cherry St',               lat:36.952678, lng:-94.792555},
+  {id:'h39', label:'1st & Cherry St',               lat:36.957949, lng:-94.792472},
+  {id:'h40', label:'1st & Maple St',                lat:36.957617, lng:-94.795163},
+  {id:'h41', label:'2nd & Maple St',                lat:36.956305, lng:-94.794589},
+  {id:'h42', label:'4th & Maple St',                lat:36.954292, lng:-94.794572},
+  {id:'h43', label:'4th & Chestnut St',             lat:36.954509, lng:-94.793634},
+  {id:'h44', label:'5th & Maple St',                lat:36.952762, lng:-94.794674},
+  {id:'h45', label:'West 4th St',                   lat:36.954498, lng:-94.795988},
+  {id:'h46', label:'NW Bluestem Dr',                lat:36.939877, lng:-94.768282},
+  {id:'h47', label:'SW Bluestem Dr',                lat:36.937415, lng:-94.768540},
+  {id:'h48', label:'NE Bluestem Dr',                lat:36.939654, lng:-94.764154},
+  {id:'h49', label:'West Andrea & Bluestem Dr',     lat:36.936412, lng:-94.764897},
+  {id:'h50', label:'East Andrea & Bluestem Dr',     lat:36.936721, lng:-94.762500},
+  {id:'h51', label:'East Bluestem Dr',              lat:36.938041, lng:-94.762038},
+  {id:'h52', label:'56 Rd & 620 Rd',                lat:36.935031, lng:-94.769537},
+];
 
 // Flow test records from JotForm
 const HYDRANT_TESTS = [
   {id:'5752955404341049537', location:'301 McDonald Dr', lat:36.9630, lng:-94.7909, date:'2023-11-08', time:'17:00', testedBy:'Will Langley', witness:'Matt Lovell', purpose:'Rick Scott Construction requested a flow test for the fire hydrant in front of the Elementary School. Service line is a 6-inch line.', nozzleRate:'Smaller than 500 gpm', pitotGpm:43, staticPsi:58, residualDrop:null},
   {id:'5757360514347098656', location:'3rd & Quapaw St', lat:36.9532, lng:-94.7891, date:'2023-11-13', time:'19:40', testedBy:'Jason Garrison', witness:'Jarrod McKibben', purpose:'Tested static and residual at 4th & Quapaw. Tested Pitot at 3rd & Quapaw.', nozzleRate:'1,000 gpm or greater', pitotGpm:40, staticPsi:58, residualDrop:54},
   {id:'5757398744345572248', location:'4th & Whitebird St', lat:36.9518, lng:-94.7845, date:'2023-11-13', time:'20:50', testedBy:'Jason Garrison', witness:'Jarrod McKibben', purpose:'4th & Whitebird Pitot — 5th & Whitebird Static', nozzleRate:'1,000 gpm or greater', pitotGpm:36, staticPsi:58, residualDrop:50},
-  {id:'5759871672245271113', location:'McDonald Dr / 1st & Main', lat:36.9560, lng:-94.7873, date:'2023-11-16', time:'17:00', testedBy:'Jason Garrison', witness:'Jarrod McKibben', purpose:'McDonald Dr Pitot — 1st & Main (School Side) Static/Residual', nozzleRate:'500 to 1,000 gpm', pitotGpm:26, staticPsi:58, residualDrop:52},
+  {id:'5759871672245271113', location:'McDonald Dr / 1st St & Main St', lat:36.9560, lng:-94.7873, date:'2023-11-16', time:'17:00', testedBy:'Jason Garrison', witness:'Jarrod McKibben', purpose:'McDonald Dr Pitot — 1st & Main (School Side) Static/Residual', nozzleRate:'500 to 1,000 gpm', pitotGpm:26, staticPsi:58, residualDrop:52},
   {id:'5759872782247043631', location:'1st & Quapaw St', lat:36.9560, lng:-94.7891, date:'2023-11-16', time:'17:15', testedBy:'Jason Garrison', witness:'Jarrod McKibben', purpose:'1st & Quapaw — Static/Residual/Pitot', nozzleRate:'1,000 gpm or greater', pitotGpm:46, staticPsi:60, residualDrop:48},
   {id:'5766128492247123839', location:'North Cayuga St', lat:36.9525, lng:-94.7800, date:'2023-11-22', time:'13:00', testedBy:'Jason Garrison', witness:'Trevor Brown', purpose:'North Cayuga Pitot — South Cayuga Static/Residual', nozzleRate:'500 to 1,000 gpm', pitotGpm:26, staticPsi:62, residualDrop:42},
-  {id:'5766130412247270560', location:'Morgan & Clyma', lat:36.9476, lng:-94.7855, date:'2023-11-22', time:'13:20', testedBy:'Jason Garrison', witness:'Trevor Brown', purpose:'Morgan & Clyma Pitot — Melba & Clyma Static/Residual', nozzleRate:'500 to 1,000 gpm', pitotGpm:16, staticPsi:64, residualDrop:24},
+  {id:'5766130412247270560', location:'Morgan & Clyma St', lat:36.9476, lng:-94.7855, date:'2023-11-22', time:'13:20', testedBy:'Jason Garrison', witness:'Trevor Brown', purpose:'Morgan & Clyma Pitot — Melba & Clyma Static/Residual', nozzleRate:'500 to 1,000 gpm', pitotGpm:16, staticPsi:64, residualDrop:24},
   {id:'5766133402242316072', location:'NE Bluestem Dr', lat:36.9616, lng:-94.7845, date:'2023-11-22', time:'13:40', testedBy:'Jason Garrison', witness:'Trevor Brown', purpose:'NE Bluestem Dr Pitot — NW Bluestem Dr Static/Residual', nozzleRate:'1,000 gpm or greater', pitotGpm:36, staticPsi:64, residualDrop:38},
 ];
 
@@ -1164,13 +1235,17 @@ function hydMatchesFilter(t) {
 function initHydrantModule() {
   renderHydSummary();
   renderHydTable();
+  // Default to map tab on first open
+  setHydTab('map', document.getElementById('htab-map'));
 }
 
 function setHydTab(tab, btn) {
   document.querySelectorAll('#view-hydrant .tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  document.getElementById('hyd-map-panel').style.display  = tab==='map'  ? '' : 'none';
   document.getElementById('hyd-list-panel').style.display = tab==='list' ? '' : 'none';
   document.getElementById('hyd-test-panel').style.display = tab==='test' ? '' : 'none';
+  if(tab==='map')  initHydrantMap();
   if(tab==='test') initHydTestForm();
   if(tab==='list') { renderHydSummary(); renderHydTable(); }
 }
@@ -1344,9 +1419,10 @@ function saveHydrantTest() {
   toast(`Flow test saved for ${location}!`, 'success');
   clearHydTestForm();
 
-  // Switch to records tab to show it
-  const listBtn = document.getElementById('htab-list');
-  listBtn.click();
+  // Refresh map with new test data and switch to it
+  refreshHydrantMap();
+  const mapBtn = document.getElementById('htab-map');
+  if(mapBtn) setHydTab('map', mapBtn);
 }
 
 function clearHydTestForm() {
@@ -1366,9 +1442,7 @@ function clearHydTestForm() {
 
 
 
-function initHydrantMap(){}
 
-function buildHydrantMap(){}
 
 function setHydFilter(f, btn) {
   hydFilter = f;
@@ -2849,6 +2923,119 @@ function renderRoster(){
 // ═══════════════════════════════════════════════
 function fmtDate(d){if(!d)return'—';const p=d.split('-');return p.length===3?`${p[1]}/${p[2]}/${p[0]}`:d;}
 function toast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className=`toast ${type} visible`;clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('visible'),4000);}
+
+// ═══════════════════════════════════════════════════════
+// SHARED: inject dark popup style once
+// ═══════════════════════════════════════════════════════
+function injectLeafletPopupStyle(){
+  if(document.getElementById('qfd-lf-style')) return;
+  const s=document.createElement('style');
+  s.id='qfd-lf-style';
+  s.textContent=`
+    .qfd-popup .leaflet-popup-content-wrapper{background:#ffffff!important;border:1px solid #d1d5db!important;border-radius:8px!important;color:#111827!important;box-shadow:0 8px 24px rgba(0,0,0,.18)!important;}
+    .qfd-popup .leaflet-popup-content{margin:11px 14px!important;font-family:'Barlow',sans-serif!important;font-size:13px!important;}
+    .qfd-popup .leaflet-popup-tip{background:#ffffff!important;}
+    .qfd-popup .leaflet-popup-close-button{color:#6b7280!important;top:5px!important;right:7px!important;}
+  `;
+  document.head.appendChild(s);
+}
+
+// ═══════════════════════════════════════════════════════
+// HYDRANT MAP
+// Uses HYDRANT_LOCATIONS (manually placed by Jason 2026)
+// Cross-refs HYDRANT_TESTS for flow data on blue markers
+// ═══════════════════════════════════════════════════════
+let _hydLeafletMap=null;
+let _hydMapDone=false;
+let _hydMarkerLayer=null;
+
+// Build label → test record lookup
+function buildTestIndex(){
+  const idx={};
+  for(const t of getAllHydTests()) idx[t.location]=t;
+  return idx;
+}
+
+function initHydrantMap(){
+  if(_hydMapDone){
+    // Already built — just resize in case panel was hidden
+    setTimeout(()=>{ if(_hydLeafletMap) _hydLeafletMap.invalidateSize(); },200);
+    return;
+  }
+  _hydMapDone=true;
+  injectLeafletPopupStyle();
+
+  const map=L.map('hydrantMapContainer',{center:[36.9518,-94.7872],zoom:14});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{
+    attribution:'&copy; <a href="https://carto.com/">CARTO</a>',subdomains:'abcd',maxZoom:20
+  }).addTo(map);
+  _hydLeafletMap=map;
+  _hydMarkerLayer=L.layerGroup().addTo(map);
+
+  renderHydrantMapMarkers();
+  setTimeout(()=>map.invalidateSize(),200);
+}
+
+function renderHydrantMapMarkers(){
+  if(!_hydMarkerLayer) return;
+  _hydMarkerLayer.clearLayers();
+
+  let tested=0,untested=0;
+  const testIdx=buildTestIndex();
+
+  HYDRANT_LOCATIONS.forEach(h=>{
+    const test=testIdx[h.label]||null;
+    const hasTested=!!test;
+    if(hasTested) tested++; else untested++;
+    const col=hasTested?'#2563eb':'#dc2626';
+    const bdr=hasTested?'#93c5fd':'#f87171';
+
+    const icon=L.divIcon({
+      className:'',
+      html:`<div style="width:13px;height:13px;border-radius:50%;background:${col};border:2.5px solid ${bdr};box-shadow:0 0 7px ${col}aa;cursor:pointer;"></div>`,
+      iconSize:[13,13],iconAnchor:[6,6]
+    });
+
+    const lbl=h.label.replace(/'/g,"\\'");
+    let pop=`<div style="font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;color:#111827;margin-bottom:5px;">${h.label}</div>`;
+    if(hasTested){
+      pop+=`<div style="font-size:11px;color:#1d4ed8;font-weight:600;margin-bottom:5px;">✅ FLOW TEST ON RECORD</div>`;
+      pop+=`<table style="font-size:11px;border-collapse:collapse;width:100%;">`;
+      pop+=`<tr><td style="color:#6b7280;padding:2px 10px 2px 0">Date</td><td style="color:#111827">${test.date}</td></tr>`;
+      pop+=`<tr><td style="color:#6b7280;padding:2px 10px 2px 0">Static PSI</td><td style="color:#111827">${test.staticPsi} psi</td></tr>`;
+      if(test.residualDrop) pop+=`<tr><td style="color:#6b7280;padding:2px 10px 2px 0">Residual Drop</td><td style="color:#111827">${test.residualDrop} psi</td></tr>`;
+      pop+=`<tr><td style="color:#6b7280;padding:2px 10px 2px 0">Pitot GPM</td><td style="color:#111827">${test.pitotGpm} GPM</td></tr>`;
+      pop+=`<tr><td style="color:#6b7280;padding:2px 10px 2px 0">Capacity</td><td style="color:#111827">${test.nozzleRate}</td></tr>`;
+      pop+=`<tr><td style="color:#6b7280;padding:2px 10px 2px 0">Tested By</td><td style="color:#111827">${test.testedBy}</td></tr>`;
+      pop+=`</table>`;
+      pop+=`<div style="margin-top:8px;"><button onclick="openHydTestFor('${lbl}')" style="background:#2563eb;border:none;color:#fff;padding:4px 12px;border-radius:4px;font-size:11px;cursor:pointer;font-family:'Barlow',sans-serif;font-weight:600;">+ Record New Test</button></div>`;
+    } else {
+      pop+=`<div style="font-size:11px;color:#dc2626;margin-bottom:8px;">No flow test on record</div>`;
+      pop+=`<button onclick="openHydTestFor('${lbl}')" style="background:#dc2626;border:none;color:#fff;padding:4px 12px;border-radius:4px;font-size:11px;cursor:pointer;font-family:'Barlow',sans-serif;font-weight:600;">+ Record Test</button>`;
+    }
+
+    L.marker([h.lat,h.lng],{icon}).addTo(_hydMarkerLayer).bindPopup(pop,{maxWidth:290,className:'qfd-popup'});
+  });
+
+  document.getElementById('hydMapCount').textContent=`${tested} tested · ${untested} untested · ${HYDRANT_LOCATIONS.length} total`;
+}
+
+// Called after saving a new test — updates markers without rebuilding the map
+function refreshHydrantMap(){
+  renderHydrantMapMarkers();
+}
+
+// Called from map popup — switches to Record Test tab with this hydrant pre-selected
+function openHydTestFor(label){
+  if(_hydLeafletMap) _hydLeafletMap.closePopup();
+  const testBtn=document.getElementById('htab-test');
+  setHydTab('test',testBtn);
+  initHydTestForm();
+  const sel=document.getElementById('ftLocation');
+  for(let i=0;i<sel.options.length;i++){
+    if(sel.options[i].value===label){ sel.selectedIndex=i; break; }
+  }
+}
 </script>
 </body>
 </html>
