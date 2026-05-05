@@ -913,7 +913,8 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
 // ═══════════════════════════════════════════════
 // JOTFORM CONFIG
 // ═══════════════════════════════════════════════
-const JOTFORM_API_KEY = '792134ddfe36e6c11deafdf03af52071';
+// JotForm data is fetched via Supabase Edge Function proxy — API key is server-side only
+const JOTFORM_PROXY = 'https://ocfsqxjcefynkfzzdiga.supabase.co/functions/v1/jotform-proxy';
 const FORM_FIRE = '221616934825157';
 const FORM_MED  = '221566768228062';
 const FORM_MISSED = '261217539228055';
@@ -2864,7 +2865,7 @@ async function load2026MissedCalls(){
   try{
     let all=[], offset=0;
     while(true){
-      const r=await fetch(`https://api.jotform.com/form/${FORM_MISSED}/submissions?apiKey=${JOTFORM_API_KEY}&limit=100&offset=${offset}&orderby=created_at,DESC`);
+      const r=await fetch(`${JOTFORM_PROXY}?form=${FORM_MISSED}&limit=100&offset=${offset}&orderby=created_at,DESC`);
       const d=await r.json();
       const batch=d.content||[];
       all=all.concat(batch);
@@ -2996,7 +2997,7 @@ async function ensureRunsLoaded(statsMode=false){
     compute2026MemberStats();
     return;
   }
-  if(JOTFORM_API_KEY==='YOUR_JOTFORM_API_KEY'){
+  if(!JOTFORM_PROXY){
     allRuns=getDemoRuns();runsLoaded=true;renderRunLog();
     document.getElementById('runLogSub').innerHTML=`<span style="color:var(--amber)">⚠ Demo mode — add JotForm API key to pull live data</span>`;
     return;
@@ -3008,7 +3009,7 @@ async function ensureRunsLoaded(statsMode=false){
     async function fetchForm(formId, label){
       if(!formId) return [];
       try{
-        const r = await fetch(`https://api.jotform.com/form/${formId}/submissions?apiKey=${JOTFORM_API_KEY}&limit=1000&offset=0&orderby=created_at,DESC`);
+        const r = await fetch(`${JOTFORM_PROXY}?form=${formId}&limit=1000&offset=0&orderby=created_at,DESC`);
         if(!r.ok) throw new Error(`HTTP ${r.status}`);
         const d = await r.json();
         if(d.responseCode && d.responseCode !== 200) throw new Error(`JotForm ${d.responseCode}: ${d.message||'error'}`);
