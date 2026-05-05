@@ -579,13 +579,15 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
     <div class="page-title">Run Statistics</div>
     <div class="page-sub">5-year historical record · 2022 – 2026</div>
     <div class="tab-nav">
-      <button class="tab-btn active" id="tab-trend" onclick="setStatsTab('trend',this)">All-Time Trend</button>
+      <button class="tab-btn active" id="tab-thisyear" onclick="setStatsTab('thisyear',this)">This Year</button>
+      <button class="tab-btn" id="tab-trend" onclick="setStatsTab('trend',this)">All-Time Trend</button>
       <button class="tab-btn" id="tab-leaderboard" onclick="setStatsTab('leaderboard',this)">Leaderboard</button>
       <button class="tab-btn" id="tab-monthly" onclick="setStatsTab('monthly',this)">Monthly</button>
       <button class="tab-btn" id="tab-members" onclick="setStatsTab('members',this)">By Member</button>
       <button class="tab-btn" id="tab-missed" onclick="setStatsTab('missed',this)">Missed Calls</button>
     </div>
-    <div id="stats-trend"></div>
+    <div id="stats-thisyear"></div>
+    <div id="stats-trend" style="display:none;"></div>
     <div id="stats-leaderboard" style="display:none;"></div>
     <div id="stats-monthly" style="display:none;"></div>
     <div id="stats-members" style="display:none;"></div>
@@ -1220,7 +1222,7 @@ const HIST = {
 const YEARS = [2022,2023,2024,2025,2026];
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 let selectedYear = 2026;
-let currentStatsTab = 'trend';
+let currentStatsTab = 'thisyear';
 
 // ═══════════════════════════════════════════════
 // ROSTER
@@ -1294,7 +1296,7 @@ async function openModule(mod){
   if(mod==='run-log'){showView('run-log');ensureRunsLoaded();return;}
   if(mod==='run-stats'){
     showView('run-stats');
-    renderStatsTab('trend');
+    renderStatsTab('thisyear');
     if(!HIST[2026].liveLoaded) load2026MissedCalls();
     // Always ensure runs are loaded so member stats can be computed from live data
     ensureRunsLoaded(true); // true = stats mode, skip rendering run log
@@ -2761,17 +2763,61 @@ function setStatsTab(tab,btn){
   currentStatsTab=tab;
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  ['trend','leaderboard','monthly','members','missed'].forEach(t=>{
+  ['thisyear','trend','leaderboard','monthly','members','missed'].forEach(t=>{
     document.getElementById('stats-'+t).style.display=t===tab?'':'none';
   });
   renderStatsTab(tab);
 }
 function renderStatsTab(tab){
+  if(tab==='thisyear') renderThisYear();
   if(tab==='trend') renderTrend();
   if(tab==='leaderboard') renderLeaderboard();
   if(tab==='monthly') renderMonthly();
   if(tab==='members') renderMembers();
   if(tab==='missed') renderMissed();
+}
+
+// ── This Year (2026) Per-Firefighter ─────────────────
+function renderThisYear(){
+  const el=document.getElementById('stats-thisyear');
+  if(!runsLoaded){
+    el.innerHTML=`<div class="card"><div style="padding:32px;text-align:center;"><div class="spinner" style="margin:0 auto 10px;"></div><div style="font-size:13px;color:var(--text-muted);">Loading live 2026 run data from JotForm...</div></div></div>`;
+    // Kick off load; compute2026MemberStats will re-render when done
+    return;
+  }
+  const sorted=[...HIST[2026].members].sort((a,b)=>b.total-a.total);
+  const max=sorted[0]?.total||1;
+  const total=HIST[2026].total;
+  const missed=HIST[2026].missed;
+  const grandTotal=(missed!=null) ? total+missed : null;
+  const yearColors={2022:'#dc2626',2023:'#f59e0b',2024:'#2563eb',2025:'#16a34a',2026:'#8b5cf6'};
+  el.innerHTML=`
+    <div class="year-summary-cards" style="grid-template-columns:repeat(5,1fr);margin-bottom:20px;">
+      <div class="yscard"><div class="yscard-val" style="color:var(--red);">${grandTotal!=null?grandTotal:'…'}</div><div class="yscard-lbl">Total Calls (YTD)</div></div>
+      <div class="yscard"><div class="yscard-val" style="color:var(--green);">${total}</div><div class="yscard-lbl">Responded</div></div>
+      <div class="yscard"><div class="yscard-val" style="color:${missed?'var(--amber)':'var(--text-muted)'};">${missed!=null?missed:'…'}</div><div class="yscard-lbl">Missed</div></div>
+      <div class="yscard"><div class="yscard-val">${sorted[0]?.total||'—'}</div><div class="yscard-lbl">Top Run Count</div></div>
+      <div class="yscard"><div class="yscard-val" style="color:var(--text-muted);">${sorted.length}</div><div class="yscard-lbl">Active Responders</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">2026 YTD — Runs Per Firefighter</div>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);">Live from JotForm · Through ${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>
+      </div>
+      <table class="leaderboard">
+        <thead><tr><th>#</th><th>Member</th><th>Runs</th><th>Volume</th><th>% of Calls</th></tr></thead>
+        <tbody>
+          ${sorted.map((m,i)=>`
+            <tr class="rank-${i+1}">
+              <td class="rank-num">${i+1}</td>
+              <td style="font-weight:600;font-size:14px;">${m.name}</td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:${yearColors[2026]};">${m.total}</td>
+              <td><div class="run-bar-wrap" style="width:140px;"><div class="run-bar" style="width:${Math.round(m.total/max*100)}%;background:${yearColors[2026]};"></div></div></td>
+              <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);">${(m.total/total*100).toFixed(1)}%</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
 }
 
 // ── All-Time Trend ───────────────────────────────
@@ -2963,14 +3009,13 @@ function renderMissed(){
         <div class="card-header"><div class="card-title">2026 Missed Call Log</div><span style="font-size:11px;color:var(--text-dim);">Live from JotForm · ${y.missedDetails.length} records</span></div>
         <div style="overflow-x:auto;">
           <table class="leaderboard">
-            <thead><tr><th>Date</th><th>Time</th><th>Type</th><th>Address</th></tr></thead>
+            <thead><tr><th>Date</th><th>Time</th><th>Type</th></tr></thead>
             <tbody>
               ${y.missedDetails.map(m=>`
                 <tr>
                   <td style="font-family:'JetBrains Mono',monospace;font-size:12px;white-space:nowrap;">${m.date||'—'}</td>
                   <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">${m.time||'—'}</td>
                   <td style="font-size:13px;">${m.type||'—'}</td>
-                  <td style="font-size:12px;color:var(--text-muted);">${m.address||'—'}</td>
                 </tr>`).join('')}
             </tbody>
           </table>
@@ -3048,6 +3093,8 @@ async function load2026MissedCalls(){
     if(selectedYear===2026 && currentStatsTab==='missed') renderMissed();
     // Also refresh leaderboard summary card count
     if(selectedYear===2026 && currentStatsTab==='leaderboard') renderLeaderboard();
+    // Refresh thisyear summary cards (missed + total now available)
+    if(currentStatsTab==='thisyear') renderThisYear();
 
   }catch(e){
     HIST[2026].missed = '?';
@@ -3131,7 +3178,7 @@ function compute2026MemberStats(){
   // Re-render current stats tab if it's a 2026 view
   if(selectedYear===2026){
     const tab = currentStatsTab;
-    if(['leaderboard','members','trend','monthly'].includes(tab)) renderStatsTab(tab);
+    if(['thisyear','leaderboard','members','trend','monthly'].includes(tab)) renderStatsTab(tab);
   }
 }
 
