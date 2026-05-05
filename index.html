@@ -977,14 +977,7 @@ const SUPABASE_URL = 'https://ocfsqxjcefynkfzzdiga.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZnNxeGpjZWZ5bmtmenpkaWdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MTQ4OTAsImV4cCI6MjA5MzA5MDg5MH0.iEx6Q_xTY_9dnue427AMAvPl585DI-9vehD7rXFd02w';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Check session on load and whenever auth state changes
-sb.auth.onAuthStateChange((event, session) => {
-  if(session) {
-    setAuthState(true, session.user.email);
-  } else {
-    setAuthState(false, null);
-  }
-});
+// Auth state listener and session check are initialized in DOMContentLoaded below
 
 function setAuthState(isLoggedIn, email) {
   const gate     = document.getElementById('authGate');
@@ -1250,10 +1243,19 @@ function updateClock(){
   const n=new Date();
   document.getElementById('headerClock').textContent=n.toLocaleDateString('en-US',{month:'short',day:'numeric'})+'  '+n.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
 }
-document.addEventListener('DOMContentLoaded', function(){
+document.addEventListener('DOMContentLoaded', async function(){
   updateClock();
   setInterval(updateClock, 30000);
-  // Kick off live 2026 data in the background so the home stat bar populates on load
+
+  // Auth — check existing session first, then listen for changes
+  const { data: { session } } = await sb.auth.getSession();
+  setAuthState(!!session, session?.user?.email || null);
+
+  sb.auth.onAuthStateChange((event, session) => {
+    setAuthState(!!session, session?.user?.email || null);
+  });
+
+  // Kick off live 2026 data in the background
   load2026MissedCalls();
   ensureRunsLoaded(true);
 });
