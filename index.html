@@ -1008,6 +1008,11 @@ async function authSignIn() {
     errEl.classList.add('visible');
     return;
   }
+  if(!email.toLowerCase().endsWith('@quapawfire.com')) {
+    errEl.textContent = 'Access is restricted to @quapawfire.com accounts only.';
+    errEl.classList.add('visible');
+    return;
+  }
 
   btn.disabled = true;
   btn.textContent = 'Signing in...';
