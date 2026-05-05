@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 :root{
   --bg:#0d1117;--surface:#161b22;--surface2:#1f2937;--border:#30363d;
@@ -379,6 +380,32 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
   .run-table th:nth-child(4),.run-table td:nth-child(4){display:none;}
   .logo-sub,.header-clock{display:none;}.roster-grid,.member-grid{grid-template-columns:1fr 1fr;}
 }
+/* ── AUTH OVERLAY ─────────────────────────────── */
+.auth-gate{display:none;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:32px 28px;max-width:380px;margin:0 auto 32px;position:relative;}
+.auth-gate::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--red);border-radius:10px 10px 0 0;}
+.auth-gate.visible{display:block;}
+.auth-title{font-family:'Oswald',sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.auth-sub{font-size:13px;color:var(--text-muted);margin-bottom:22px;}
+.auth-field{margin-bottom:14px;}
+.auth-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);display:block;margin-bottom:5px;}
+.auth-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;padding:9px 12px;outline:none;transition:border-color .2s;}
+.auth-input:focus{border-color:var(--red);}
+.auth-btn{width:100%;padding:10px;background:var(--red);border:none;border-radius:var(--radius);color:#fff;font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;letter-spacing:1px;text-transform:uppercase;cursor:pointer;margin-top:6px;transition:background .15s;}
+.auth-btn:hover{background:#b91c1c;}
+.auth-btn:disabled{background:#4b1c1c;color:#888;cursor:not-allowed;}
+.auth-error{background:rgba(220,38,38,.12);border:1px solid rgba(220,38,38,.3);border-radius:var(--radius);color:#f87171;font-size:12px;padding:8px 12px;margin-top:10px;display:none;}
+.auth-error.visible{display:block;}
+.auth-forgot{font-size:12px;color:var(--text-dim);text-align:center;margin-top:12px;}
+.auth-forgot a{color:var(--text-muted);cursor:pointer;text-decoration:underline;}
+.auth-forgot a:hover{color:var(--text);}
+/* signed-in state */
+.auth-user-bar{display:none;align-items:center;gap:10px;padding:6px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;font-size:12px;color:var(--text-muted);}
+.auth-user-bar.visible{display:flex;}
+.auth-user-email{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text);}
+.auth-signout{background:none;border:none;color:var(--text-dim);font-size:11px;cursor:pointer;font-family:'Barlow',sans-serif;padding:2px 6px;border-radius:3px;}
+.auth-signout:hover{color:var(--red);}
+/* lock icon on gated section labels */
+.gate-lock{font-size:10px;margin-left:5px;opacity:.5;}
 </style>
 </head>
 <body>
@@ -403,7 +430,14 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
       <div class="logo-sub">Department Portal</div>
     </div>
   </div>
-  <div class="header-clock" id="headerClock"></div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <div class="auth-user-bar" id="authUserBar">
+      <span>🔓</span>
+      <span class="auth-user-email" id="authUserEmail"></span>
+      <button class="auth-signout" onclick="signOut()">Sign Out</button>
+    </div>
+    <div class="header-clock" id="headerClock"></div>
+  </div>
 </header>
 
 <!-- ══ HOME ══════════════════════════════════════════ -->
@@ -441,54 +475,76 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
         <div class="module-desc">5-year history, member leaderboards, trends</div>
       </div>
     </div>
-    <div class="portal-section-label">Operational Tools</div>
-    <div class="module-grid">
-      <a class="module-card" href="https://checklist.quapawfire.com" style="--module-color:#dc2626">
-        <span class="module-badge badge-live">LIVE</span>
-        <span class="module-icon">🚒</span>
-        <div class="module-name">Truck Checks</div>
-        <div class="module-desc">NFPA 1911 apparatus inspections</div>
-      </a>
-      <div class="module-card" style="--module-color:#2563eb" onclick="openModule('hose')">
-        <span class="module-badge badge-live">LIVE</span>
-        <span class="module-icon">🚿</span>
-        <div class="module-name">Hose Checks</div>
-        <div class="module-desc">Inventory, test history, NFPA 1962 records</div>
+
+    <!-- LOGIN GATE — shown when not authenticated -->
+    <div class="auth-gate" id="authGate">
+      <div class="auth-title">Member Login</div>
+      <div class="auth-sub">Sign in to access Operational Tools and Records</div>
+      <div class="auth-field">
+        <label class="auth-label">Email</label>
+        <input class="auth-input" id="authEmail" type="email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')authSignIn()">
       </div>
-      <div class="module-card" style="--module-color:#16a34a" onclick="openModule('scba')">
-        <span class="module-badge badge-live">LIVE</span>
-        <span class="module-icon">😮‍💨</span>
-        <div class="module-name">SCBA Checks</div>
-        <div class="module-desc">Packs, cylinders, masks · NFPA 1852</div>
+      <div class="auth-field">
+        <label class="auth-label">Password</label>
+        <input class="auth-input" id="authPassword" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')authSignIn()">
       </div>
-      <div class="module-card" style="--module-color:#2563eb" onclick="openModule('hydrant')">
-        <span class="module-badge badge-live">LIVE</span>
-        <span class="module-icon">💧</span>
-        <div class="module-name">Hydrant Checks</div>
-        <div class="module-desc">Map · Flow test records · Record new test</div>
+      <button class="auth-btn" id="authBtn" onclick="authSignIn()">Sign In</button>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-forgot"><a onclick="authForgot()">Forgot password?</a></div>
+    </div>
+
+    <!-- GATED SECTIONS — hidden until authenticated -->
+    <div id="gatedSections" style="display:none;">
+      <div class="portal-section-label">Operational Tools <span class="gate-lock">🔓</span></div>
+      <div class="module-grid">
+        <a class="module-card" href="https://checklist.quapawfire.com" style="--module-color:#dc2626">
+          <span class="module-badge badge-live">LIVE</span>
+          <span class="module-icon">🚒</span>
+          <div class="module-name">Truck Checks</div>
+          <div class="module-desc">NFPA 1911 apparatus inspections</div>
+        </a>
+        <div class="module-card" style="--module-color:#2563eb" onclick="openModule('hose')">
+          <span class="module-badge badge-live">LIVE</span>
+          <span class="module-icon">🚿</span>
+          <div class="module-name">Hose Checks</div>
+          <div class="module-desc">Inventory, test history, NFPA 1962 records</div>
+        </div>
+        <div class="module-card" style="--module-color:#16a34a" onclick="openModule('scba')">
+          <span class="module-badge badge-live">LIVE</span>
+          <span class="module-icon">😮‍💨</span>
+          <div class="module-name">SCBA Checks</div>
+          <div class="module-desc">Packs, cylinders, masks · NFPA 1852</div>
+        </div>
+        <div class="module-card" style="--module-color:#2563eb" onclick="openModule('hydrant')">
+          <span class="module-badge badge-live">LIVE</span>
+          <span class="module-icon">💧</span>
+          <div class="module-name">Hydrant Checks</div>
+          <div class="module-desc">Map · Flow test records · Record new test</div>
+        </div>
+        <div class="module-card" style="--module-color:#f59e0b" onclick="cs('equipment')">
+          <span class="module-badge badge-soon">SOON</span>
+          <span class="module-icon">🔧</span>
+          <div class="module-name">Equipment Checks</div>
+          <div class="module-desc">Service logs for tools and equipment</div>
+        </div>
       </div>
-      <div class="module-card" style="--module-color:#f59e0b" onclick="cs('equipment')">
-        <span class="module-badge badge-soon">SOON</span>
-        <span class="module-icon">🔧</span>
-        <div class="module-name">Equipment Checks</div>
-        <div class="module-desc">Service logs for tools and equipment</div>
+      <div class="portal-section-label">Records & Admin <span class="gate-lock">🔓</span></div>
+      <div class="module-grid">
+        <div class="module-card" style="--module-color:#16a34a" onclick="openModule('roster')">
+          <span class="module-badge badge-live">LIVE</span>
+          <span class="module-icon">👥</span>
+          <div class="module-name">Member Roster</div>
+          <div class="module-desc">Contact directory, 26 active members</div>
+        </div>
+        <div class="module-card" style="--module-color:#f59e0b" onclick="cs('training')">
+          <span class="module-badge badge-soon">SOON</span>
+          <span class="module-icon">📚</span>
+          <div class="module-name">Training Log</div>
+          <div class="module-desc">Hours, certs, compliance tracking</div>
+        </div>
       </div>
     </div>
-    <div class="portal-section-label">Records & Admin</div>
-    <div class="module-grid">
-      <div class="module-card" style="--module-color:#16a34a" onclick="openModule('roster')">
-        <span class="module-badge badge-live">LIVE</span>
-        <span class="module-icon">👥</span>
-        <div class="module-name">Member Roster</div>
-        <div class="module-desc">Contact directory, 26 active members</div>
-      </div>
-      <div class="module-card" style="--module-color:#f59e0b" onclick="cs('training')">
-        <span class="module-badge badge-soon">SOON</span>
-        <span class="module-icon">📚</span>
-        <div class="module-name">Training Log</div>
-        <div class="module-desc">Hours, certs, compliance tracking</div>
-      </div>
-    </div>
+
   </div>
 </div>
 
@@ -915,6 +971,92 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
 // ═══════════════════════════════════════════════
 // JotForm data is fetched via Supabase Edge Function proxy — API key is server-side only
 const JOTFORM_PROXY = 'https://ocfsqxjcefynkfzzdiga.supabase.co/functions/v1/jotform-proxy';
+
+// ── SUPABASE AUTH ─────────────────────────────────────────
+const SUPABASE_URL = 'https://ocfsqxjcefynkfzzdiga.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jZnNxeGpjZWZ5bmtmenpkaWdhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1MTQ4OTAsImV4cCI6MjA5MzA5MDg5MH0.iEx6Q_xTY_9dnue427AMAvPl585DI-9vehD7rXFd02w';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Check session on load and whenever auth state changes
+sb.auth.onAuthStateChange((event, session) => {
+  if(session) {
+    setAuthState(true, session.user.email);
+  } else {
+    setAuthState(false, null);
+  }
+});
+
+function setAuthState(isLoggedIn, email) {
+  const gate     = document.getElementById('authGate');
+  const gated    = document.getElementById('gatedSections');
+  const userBar  = document.getElementById('authUserBar');
+  const userEmail= document.getElementById('authUserEmail');
+  if(isLoggedIn) {
+    gate.classList.remove('visible');
+    gated.style.display = '';
+    userBar.classList.add('visible');
+    userEmail.textContent = email;
+  } else {
+    gate.classList.add('visible');
+    gated.style.display = 'none';
+    userBar.classList.remove('visible');
+    userEmail.textContent = '';
+  }
+}
+
+async function authSignIn() {
+  const email    = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const btn      = document.getElementById('authBtn');
+  const errEl    = document.getElementById('authError');
+
+  if(!email || !password) {
+    errEl.textContent = 'Please enter your email and password.';
+    errEl.classList.add('visible');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
+  errEl.classList.remove('visible');
+
+  const { error } = await sb.auth.signInWithPassword({ email, password });
+
+  btn.disabled = false;
+  btn.textContent = 'Sign In';
+
+  if(error) {
+    errEl.textContent = error.message === 'Invalid login credentials'
+      ? 'Incorrect email or password. Try again.'
+      : error.message;
+    errEl.classList.add('visible');
+  } else {
+    document.getElementById('authPassword').value = '';
+  }
+}
+
+async function authForgot() {
+  const email = document.getElementById('authEmail').value.trim();
+  const errEl = document.getElementById('authError');
+  if(!email) {
+    errEl.textContent = 'Enter your email address above first.';
+    errEl.classList.add('visible');
+    return;
+  }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: 'https://portal.quapawfire.com'
+  });
+  errEl.style.background = 'rgba(22,163,74,.12)';
+  errEl.style.borderColor = 'rgba(22,163,74,.3)';
+  errEl.style.color = '#4ade80';
+  errEl.textContent = error ? error.message : `Password reset email sent to ${email}`;
+  errEl.classList.add('visible');
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  goHome();
+}
 const FORM_FIRE = '221616934825157';
 const FORM_MED  = '221566768228062';
 const FORM_MISSED = '261217539228055';
@@ -1134,7 +1276,13 @@ function cs(key){
   document.getElementById('csFeatures').innerHTML=d.f.map(x=>`<div class="cs-feature">${x}</div>`).join('');
   showView('coming-soon');
 }
-function openModule(mod){
+async function openModule(mod){
+  // Check auth for gated modules
+  const gated = ['hose','scba','hydrant','roster'];
+  if(gated.includes(mod)){
+    const { data:{ session } } = await sb.auth.getSession();
+    if(!session){ goHome(); document.getElementById('authGate').classList.add('visible'); return; }
+  }
   if(mod==='roster'){renderRoster();showView('roster');return;}
   if(mod==='run-log'){showView('run-log');ensureRunsLoaded();return;}
   if(mod==='run-stats'){
