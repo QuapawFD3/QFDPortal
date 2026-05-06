@@ -989,12 +989,12 @@ function setAuthState(isLoggedIn, email) {
   const userBar  = document.getElementById('authUserBar');
   const userEmail= document.getElementById('authUserEmail');
   if(isLoggedIn) {
-    gate.classList.remove('visible');
+    gate.style.display = 'none';
     gated.style.display = '';
     userBar.classList.add('visible');
     userEmail.textContent = email;
   } else {
-    gate.classList.add('visible');
+    gate.style.display = '';
     gated.style.display = 'none';
     userBar.classList.remove('visible');
     userEmail.textContent = '';
@@ -2839,12 +2839,7 @@ function renderTrend(){
 
   const yearColors={2022:'#dc2626',2023:'#f59e0b',2024:'#2563eb',2025:'#16a34a',2026:'#8b5cf6'};
 
-  const _dbg = runsLoaded
-    ? `✅ ${allRuns.length} runs loaded · ${HIST[2026]._debugRunCount??'?'} matched 2026 · Jason: ${HIST[2026]._debugJason} · sample date: "${HIST[2026]._debugSampleDate??'none'}"`
-    : `⏳ Fetching live 2026 run data...`;
-
   el.innerHTML=`
-    <div style="background:rgba(37,99,235,.1);border:1px solid rgba(37,99,235,.3);border-radius:6px;padding:7px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#60a5fa;margin-bottom:12px;" id="statsDebugBanner">${_dbg}</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
       <div class="card">
         <div class="card-header"><div class="card-title">Annual Run Volume</div></div>
@@ -3172,9 +3167,6 @@ function compute2026MemberStats(){
   HIST[2026].total   = runs2026.length;
   HIST[2026].monthly = monthly;
   HIST[2026].members = Object.values(memberMap).sort((a,b)=>b.total-a.total);
-  HIST[2026]._debugRunCount = runs2026.length;
-  HIST[2026]._debugSampleDate = allRuns[0]?.date || allRuns[0]?.created || 'none';
-  HIST[2026]._debugJason = memberMap['Jason Garrison']?.total ?? 'not found';
   updateHomeStats();
 
   // Re-render current stats tab if it's a 2026 view
