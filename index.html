@@ -668,6 +668,12 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
           <div class="module-name">Training Log</div>
           <div class="module-desc">Hours, certs, compliance tracking</div>
         </div>
+        <div class="module-card" style="--module-color:#dc2626" onclick="openModule('recruit')">
+          <span class="module-badge badge-live">LIVE</span>
+          <span class="module-icon">🔰</span>
+          <div class="module-name">New Recruit</div>
+          <div class="module-desc">Green Book skill sign-offs & progress tracking</div>
+        </div>
       </div>
     </div>
 
@@ -1134,6 +1140,30 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
   </div>
 </div>
 
+
+<!-- ══ NEW RECRUIT ════════════════════════════════════ -->
+<div class="view" id="view-recruit">
+  <div class="inner-header" style="justify-content:space-between;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button class="back-btn" onclick="goHome()">← Back</button>
+      <span class="inner-divider">/</span>
+      <span class="inner-title">New Recruit Training</span>
+    </div>
+    <div class="tc-nav-tabs">
+      <button class="tc-nav-tab active" id="recTabProgress" onclick="recSwitchTab('progress',this)">📋 My Progress</button>
+      <button class="tc-nav-tab" id="recTabAll" onclick="recSwitchTab('all',this)">👥 All Recruits</button>
+    </div>
+  </div>
+  <div class="module-content">
+    <div class="tc-view active" id="rec-view-progress">
+      <div id="recProgressContent"></div>
+    </div>
+    <div class="tc-view" id="rec-view-all">
+      <div id="recAllContent"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ══ FIRE SUBSCRIPTIONS ══════════════════════════════ -->
 <!-- ══ COMING SOON ════════════════════════════════════ -->
 <div class="view" id="view-coming-soon">
@@ -1473,7 +1503,7 @@ function cs(key){
 }
 async function openModule(mod){
   // Check auth for gated modules
-  const gated = ['hose','scba','hydrant','roster','truck'];
+  const gated = ['hose','scba','hydrant','roster','truck','recruit'];
   if(gated.includes(mod)){
     const { data:{ session } } = await sb.auth.getSession();
     if(!session){ goHome(); document.getElementById('authGate').classList.add('visible'); return; }
@@ -1482,6 +1512,12 @@ async function openModule(mod){
       TC.info.performer = session.user.email;
       showView('truck');
       tcRenderStep();
+      return;
+    }
+    if(mod==='recruit'){
+      REC.loggedInEmail = session.user.email;
+      showView('recruit');
+      recInit();
       return;
     }
   }
@@ -4239,6 +4275,380 @@ function tcToast(msg, type='success') {
   // Reuse the portal's existing toast
   const t = document.getElementById('toast');
   if (t) { t.textContent = msg; t.className = `toast ${type} visible`; clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('visible'), 5000); }
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// NEW RECRUIT MODULE — Green Book Sign-Off Tracker
+// ═══════════════════════════════════════════════════════════════════
+
+const GREEN_BOOK = [
+  {section:'PPE', items:[
+    'Demonstrate how to don PPE in under 60 seconds',
+    'Demonstrate how to don SCBA in under 60 seconds',
+    'Identify key components of SCBA',
+    'Demonstrate PPE maintenance',
+  ]},
+  {section:'Apparatus Orientation', items:[
+    'Identify apparatus response guidelines',
+    'Is proficient in Engine 22 inventory',
+    'Is proficient in Engine 21 inventory',
+    'Is proficient in Brush 1/18/20/27/28 inventory',
+    'Is proficient in Tanker 2/25 inventory',
+    'Is proficient in Rescue 23 inventory',
+  ]},
+  {section:'Water Supply / Utilities', items:[
+    'Explain contents of hydrant pack',
+    'Explain difference between forward and reverse lay',
+    'Can make a hydrant in under 2 minutes',
+    'Demonstrate how to fill all apparatus',
+    'Demonstrate how to secure gas to a structure',
+    'Demonstrate how to secure electric to a structure',
+  ]},
+  {section:'EMS Orientation', items:[
+    'Is proficient in Baxter Fire EMS bag',
+    'Demonstrate getting cot off of ambulance',
+    'Demonstrate putting cot on ambulance',
+    'Demonstrate fundamentals of patient lifting',
+    'Can identify Hospital locations',
+  ]},
+  {section:'Tool Use & Maintenance', items:[
+    'Can explain the use & maintenance of all hand tools',
+    'Can explain the use & maintenance of all small engine tools',
+  ]},
+  {section:'Ground Ladders', items:[
+    'Can identify types and lengths of ground ladders',
+    'Can demonstrate how to clean and maintain ground ladders',
+    'Can demonstrate how to deploy 24ft extension ladder',
+    'Can demonstrate how to deploy 16ft roof ladder',
+    'Can demonstrate how to deploy attic ladder',
+    'Can demonstrate how to properly climb a ladder',
+    'Can demonstrate how to bring hand tools up a ladder',
+  ]},
+  {section:'Brush Truck Operations', items:[
+    'Can demonstrate how to start pump',
+    'Can demonstrate how to prime the pump',
+    'Can pump at proper pressures',
+    'Can demonstrate how to use foam system',
+    'Can demonstrate how to use whip line and green line and nozzles',
+    'Can demonstrate how to use rakes and blowers',
+  ]},
+  {section:'Hoseline Operations', items:[
+    "Can deploy 150' 1¾" preconnect",
+    "Can deploy 200' 1¾" preconnect",
+    'Can deploy bumper line',
+    "Can deploy 200' 2½" preconnect",
+    'Can demonstrate how to load triple layer preconnect',
+    'Can demonstrate how to load bumper line',
+    "Can demonstrate how to flow water from 1¾" handline",
+    "Can demonstrate how to advance 1¾" handline",
+    "Can demonstrate how to flow water from 2½" handline",
+    'Can demonstrate how to back up nozzleman',
+  ]},
+  {section:'Firefighter Survival', items:[
+    'Can demonstrate how to call a mayday over the radio',
+    'Complete SCBA confidence course',
+    'Can demonstrate forms of rescue breathing',
+    'Can perform emergency egress',
+  ]},
+  {section:'Search & Rescue', items:[
+    'Can complete a primary search without hoseline',
+    'Can complete a primary search with a hoseline',
+    'Can demonstrate how to perform a V.E.S operation',
+    'Can demonstrate different victim drags',
+    'Can demonstrate how to remove victim through a door',
+    'Can demonstrate how to remove victim through a window',
+    'Can demonstrate how to remove victim from a ladder',
+  ]},
+  {section:'R.I.T. (Rapid Intervention Team)', items:[
+    'Can explain roles and responsibilities of RIT',
+    'Can show what tools are needed for RIT',
+    'Can demonstrate how to use Pak Tracker',
+    'Can show how to properly use RIT pack',
+    'Can demonstrate different methods of firefighter removal',
+    'Can perform a toxic bottle swap',
+  ]},
+];
+
+const TOTAL_ITEMS = GREEN_BOOK.reduce((sum, s) => sum + s.items.length, 0);
+
+// State
+const REC = {
+  loggedInEmail: '',
+  selectedRecruit: null,   // name string
+  signoffs: {},            // { 'sectionIdx-itemIdx': {passed:bool, signedBy:string, date:string} }
+  activeTab: 'progress',
+  collapsed: {},           // section collapse state
+};
+
+function recSwitchTab(tab, btn) {
+  document.querySelectorAll('.tc-nav-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#view-recruit .tc-view').forEach(v => v.classList.remove('active'));
+  document.getElementById('rec-view-' + (tab === 'progress' ? 'progress' : 'all')).classList.add('active');
+  if (btn) btn.classList.add('active');
+  REC.activeTab = tab;
+  if (tab === 'all') recRenderAll();
+}
+
+async function recInit() {
+  // Try to auto-match logged-in email to roster name
+  const email = REC.loggedInEmail || '';
+  const firstName = email.split('@')[0].split('.')[0];
+  const matched = ROSTER.find(m => m.name.toLowerCase().startsWith(firstName.toLowerCase()));
+  REC.selectedRecruit = matched ? matched.name : null;
+  REC.signoffs = {};
+  REC.collapsed = {};
+  if (REC.selectedRecruit) {
+    await recLoadSignoffs(REC.selectedRecruit);
+  }
+  recRenderProgress();
+}
+
+async function recLoadSignoffs(recruitName) {
+  REC.signoffs = {};
+  try {
+    const { data, error } = await sb
+      .from('recruit_signoffs')
+      .select('*')
+      .eq('recruit_name', recruitName);
+    if (data) {
+      data.forEach(row => {
+        REC.signoffs[row.item_key] = {
+          passed: row.passed,
+          signedBy: row.signed_by,
+          date: row.sign_date,
+        };
+      });
+    }
+  } catch(e) { console.warn('recLoadSignoffs error:', e); }
+}
+
+function recRenderProgress() {
+  const c = document.getElementById('recProgressContent');
+  if (!REC.selectedRecruit) {
+    // Show recruit selector
+    c.innerHTML = `
+      <div class="page-title" style="margin-bottom:6px;">New Recruit Training</div>
+      <div class="page-subtitle">Green Book skill sign-off tracker. Select your name to view your progress.</div>
+      <div class="tc-section-card" style="max-width:420px;margin-top:24px;">
+        <div style="padding:22px;">
+          <div class="form-label">Select Recruit</div>
+          <select class="form-input" id="recNameSelect" style="margin-bottom:16px;" onchange="recSelectName(this.value)">
+            <option value="">— Choose name —</option>
+            ${ROSTER.map(m => `<option value="${m.name}">${m.name}</option>`).join('')}
+          </select>
+          <div style="font-size:12px;color:var(--text-muted);">Officers can select any recruit name to sign off skills.</div>
+        </div>
+      </div>`;
+    return;
+  }
+
+  const completed = Object.values(REC.signoffs).filter(s => s.passed).length;
+  const pct = Math.round(completed / TOTAL_ITEMS * 100);
+
+  let html = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+      <div>
+        <div class="page-title" style="margin-bottom:2px;">🔰 ${REC.selectedRecruit}</div>
+        <div class="page-subtitle" style="margin:0;">Green Book Progress</div>
+      </div>
+      <button class="btn-secondary" style="font-size:12px;padding:6px 14px;" onclick="recChangePerson()">Change Recruit</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">
+      <div class="tc-stat-card"><div class="tc-stat-value" style="color:var(--text);">${TOTAL_ITEMS}</div><div class="tc-stat-label">Total Skills</div></div>
+      <div class="tc-stat-card pass"><div class="tc-stat-value">${completed}</div><div class="tc-stat-label">Signed Off</div></div>
+      <div class="tc-stat-card"><div class="tc-stat-value" style="color:${pct===100?'#4ade80':'var(--amber)'};">${pct}%</div><div class="tc-stat-label">Complete</div></div>
+    </div>
+    <div class="tc-progress-bar-wrap" style="margin-bottom:24px;">
+      <div class="tc-progress-bar-fill" style="width:${pct}%;background:${pct===100?'var(--green)':'var(--red)'};"></div>
+    </div>
+    ${pct === 100 ? `<div class="tc-status-banner all-clear" style="margin-bottom:20px;">🎉 All skills complete — ${REC.selectedRecruit} has completed the Green Book!</div>` : ''}`;
+
+  GREEN_BOOK.forEach((sec, si) => {
+    const secDone = sec.items.filter((_, ii) => REC.signoffs[`${si}-${ii}`]?.passed).length;
+    const isCollapsed = REC.collapsed[si];
+    const secPct = Math.round(secDone / sec.items.length * 100);
+    const dotClass = secDone === sec.items.length ? 'complete' : secDone > 0 ? 'partial' : '';
+
+    html += `
+      <div class="tc-section-card">
+        <div class="tc-section-header" onclick="recTogSec(${si})">
+          <div class="tc-section-title">
+            <span class="tc-section-status-dot ${dotClass}" style="width:10px;height:10px;"></span>
+            ${sec.section}
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span class="tc-section-progress">${secDone}/${sec.items.length}</span>
+            <button class="tc-collapse-btn ${isCollapsed ? 'collapsed' : ''}" id="reccb-${si}">▼</button>
+          </div>
+        </div>
+        <div class="tc-section-body ${isCollapsed ? 'collapsed' : ''}" id="recsb-${si}">`;
+
+    sec.items.forEach((item, ii) => {
+      const key = `${si}-${ii}`;
+      const so = REC.signoffs[key];
+      const passed = so?.passed;
+      html += `
+          <div class="tc-checklist-item ${passed ? 'passed' : ''}" id="recitem-${key}">
+            <div class="tc-item-row" style="flex-wrap:wrap;gap:10px;">
+              <div class="tc-item-text" style="min-width:200px;">${item}</div>
+              <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+                ${passed
+                  ? `<div style="display:flex;align-items:center;gap:6px;">
+                      <span style="font-size:11px;font-weight:700;color:#4ade80;letter-spacing:.5px;">✓ SIGNED OFF</span>
+                      <span style="font-size:11px;color:var(--text-muted);">${so.signedBy} · ${so.date}</span>
+                      <button class="tc-status-btn fail" style="width:auto;padding:0 10px;font-size:10px;" onclick="recRevoke('${key}')">Revoke</button>
+                    </div>`
+                  : `<input class="form-input" type="text" id="reccredit-${key}" placeholder="Officer initials / name" style="width:160px;font-size:13px;padding:6px 10px;">
+                     <button class="btn-success" style="padding:6px 14px;font-size:12px;" onclick="recSignOff('${key}')">Sign Off</button>`
+                }
+              </div>
+            </div>
+          </div>`;
+    });
+
+    html += `
+        </div>
+      </div>`;
+  });
+
+  c.innerHTML = html;
+}
+
+function recTogSec(si) {
+  REC.collapsed[si] = !REC.collapsed[si];
+  document.getElementById(`recsb-${si}`)?.classList.toggle('collapsed', REC.collapsed[si]);
+  document.getElementById(`reccb-${si}`)?.classList.toggle('collapsed', REC.collapsed[si]);
+}
+
+async function recSelectName(name) {
+  if (!name) return;
+  REC.selectedRecruit = name;
+  REC.signoffs = {};
+  REC.collapsed = {};
+  await recLoadSignoffs(name);
+  recRenderProgress();
+}
+
+function recChangePerson() {
+  REC.selectedRecruit = null;
+  REC.signoffs = {};
+  recRenderProgress();
+}
+
+async function recSignOff(key) {
+  const creditEl = document.getElementById(`reccredit-${key}`);
+  const signedBy = creditEl?.value.trim();
+  if (!signedBy) { tcToast('Enter the officer\'s name or initials signing this off.', 'error'); return; }
+
+  const parts = key.split('-');
+  const si = parseInt(parts[0]), ii = parseInt(parts[1]);
+  const section = GREEN_BOOK[si].section;
+  const item = GREEN_BOOK[si].items[ii];
+  const today = new Date().toISOString().split('T')[0];
+
+  try {
+    const { error } = await sb.from('recruit_signoffs').upsert([{
+      recruit_name: REC.selectedRecruit,
+      item_key: key,
+      section: section,
+      item: item,
+      passed: true,
+      signed_by: signedBy,
+      sign_date: today,
+      logged_by_email: REC.loggedInEmail,
+    }], { onConflict: 'recruit_name,item_key' });
+    if (error) throw error;
+    REC.signoffs[key] = { passed: true, signedBy, date: today };
+    tcToast(`✓ Signed off: ${item.substring(0,40)}...`, 'success');
+    recRenderProgress();
+  } catch(e) {
+    tcToast('Save failed: ' + (e.message || 'Unknown error'), 'error');
+  }
+}
+
+async function recRevoke(key) {
+  if (!confirm('Revoke this sign-off?')) return;
+  try {
+    const { error } = await sb.from('recruit_signoffs')
+      .delete()
+      .eq('recruit_name', REC.selectedRecruit)
+      .eq('item_key', key);
+    if (error) throw error;
+    delete REC.signoffs[key];
+    tcToast('Sign-off revoked.', 'success');
+    recRenderProgress();
+  } catch(e) {
+    tcToast('Revoke failed: ' + (e.message || 'Unknown error'), 'error');
+  }
+}
+
+async function recRenderAll() {
+  const c = document.getElementById('recAllContent');
+  c.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);"><div class="spinner" style="margin:0 auto 14px;"></div>Loading all recruits...</div>`;
+
+  try {
+    const { data, error } = await sb
+      .from('recruit_signoffs')
+      .select('recruit_name, item_key, passed, sign_date')
+      .order('recruit_name');
+    if (error) throw error;
+
+    // Group by recruit
+    const byRecruit = {};
+    (data || []).forEach(row => {
+      if (!byRecruit[row.recruit_name]) byRecruit[row.recruit_name] = { completed: 0 };
+      if (row.passed) byRecruit[row.recruit_name].completed++;
+    });
+
+    const recruits = Object.entries(byRecruit).sort((a,b) => b[1].completed - a[1].completed);
+
+    if (!recruits.length) {
+      c.innerHTML = `<div class="empty-state" style="text-align:center;padding:64px 32px;color:var(--text-muted);">
+        <div style="font-size:48px;margin-bottom:14px;">🔰</div>
+        <div style="font-family:'Oswald',sans-serif;font-size:20px;text-transform:uppercase;margin-bottom:6px;">No Recruits Yet</div>
+        <p style="font-size:14px;">Sign-offs appear here once a recruit starts their Green Book.</p>
+      </div>`;
+      return;
+    }
+
+    let html = `
+      <div class="page-title" style="margin-bottom:6px;">All Recruit Progress</div>
+      <div class="page-subtitle">Click a recruit to view or sign off their skills.</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:20px;">`;
+
+    recruits.forEach(([name, data]) => {
+      const pct = Math.round(data.completed / TOTAL_ITEMS * 100);
+      html += `
+        <div class="tc-section-card" style="cursor:pointer;" onclick="recViewRecruit('${name}')">
+          <div style="padding:16px 18px;">
+            <div style="font-family:'Oswald',sans-serif;font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">${name}</div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="tc-progress-bar-wrap" style="flex:1;margin:0;">
+                <div class="tc-progress-bar-fill" style="width:${pct}%;background:${pct===100?'var(--green)':'var(--red)'};"></div>
+              </div>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:${pct===100?'#4ade80':'var(--text)'};">${pct}%</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">${data.completed} of ${TOTAL_ITEMS} skills complete</div>
+          </div>
+        </div>`;
+    });
+
+    html += `</div>`;
+    c.innerHTML = html;
+  } catch(e) {
+    c.innerHTML = `<div style="color:var(--red);padding:24px;">Failed to load recruit data: ${e.message}</div>`;
+  }
+}
+
+async function recViewRecruit(name) {
+  REC.selectedRecruit = name;
+  REC.signoffs = {};
+  REC.collapsed = {};
+  await recLoadSignoffs(name);
+  // Switch to progress tab
+  recSwitchTab('progress', document.getElementById('recTabProgress'));
+  recRenderProgress();
 }
 </script>
 </body>
