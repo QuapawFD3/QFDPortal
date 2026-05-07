@@ -3426,7 +3426,8 @@ async function ensureRunsLoaded(statsMode=false){
     return;
   }
   try{
-    document.getElementById('runLogContent').innerHTML=`<div class="loading-state"><div class="spinner"></div>Loading submissions...</div>`;
+    const _rlc = document.getElementById('runLogContent');
+    if(_rlc && !statsMode) _rlc.innerHTML=`<div class="loading-state"><div class="spinner"></div>Loading submissions...</div>`;
 
     // Fetch each form independently so one failure doesn't kill both
     async function fetchForm(formId, label){
@@ -3452,7 +3453,8 @@ async function ensureRunsLoaded(statsMode=false){
       .sort((a,b) => new Date(b.created||b.date||0) - new Date(a.created||a.date||0));
 
     if(!allRuns.length){
-      document.getElementById('runLogContent').innerHTML=`<div class="empty-state">
+      const _rlc2 = document.getElementById('runLogContent');
+      if(_rlc2) _rlc2.innerHTML=`<div class="empty-state">
         <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
         <div style="font-family:'Oswald',sans-serif;font-size:16px;text-transform:uppercase;margin-bottom:8px;">Could Not Load Runs</div>
         <div style="font-size:13px;color:var(--text-muted);max-width:400px;line-height:1.6;">
@@ -3473,7 +3475,9 @@ async function ensureRunsLoaded(statsMode=false){
     compute2026MemberStats(); // rebuild live 2026 member stats from JotForm data
 
   }catch(err){
-    document.getElementById('runLogContent').innerHTML=`<div class="empty-state">
+    console.error('ensureRunsLoaded error:', err.message);
+    const _rlc3 = document.getElementById('runLogContent');
+    if(_rlc3) _rlc3.innerHTML=`<div class="empty-state">
       <div style="font-size:40px;margin-bottom:12px;">⚠️</div>
       <div style="font-family:'Oswald',sans-serif;font-size:16px;text-transform:uppercase;margin-bottom:8px;">Could Not Load</div>
       <div style="font-size:13px;color:var(--text-muted);">${err.message}</div>
