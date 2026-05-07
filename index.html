@@ -503,6 +503,18 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
 .tc-nav-tab.active{color:var(--red);background:var(--red-glow);}
 .tc-view{display:none;}.tc-view.active{display:block;}
 
+
+/* ── Truck check button base + success variant ── */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border:none;border-radius:var(--radius);font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn.btn-primary{background:var(--red);color:#fff;}
+.btn.btn-primary:hover{background:#b91c1c;}
+.btn.btn-primary:disabled{background:var(--surface2);color:var(--text-muted);cursor:not-allowed;}
+.btn.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn.btn-secondary:hover{border-color:var(--text-muted);}
+.btn-success{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border:none;border-radius:var(--radius);font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;background:var(--green);color:#fff;}
+.btn-success:hover{background:#15803d;}
+
+.page-subtitle{font-size:13px;color:var(--text-muted);margin-bottom:20px;}
 /* ── Truck check form inputs (dark theme) ── */
 .form-group{margin-bottom:18px;}
 .form-label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:5px;}
