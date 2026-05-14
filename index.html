@@ -413,6 +413,10 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
 .auth-signout:hover{color:var(--red);}
 /* lock icon on gated section labels */
 .gate-lock{font-size:10px;margin-left:5px;opacity:.5;}
+/* truck check loading overlay */
+.loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:500;}
+.loading-overlay.visible{display:flex;}
+.loader{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px 48px;text-align:center;}
 
 /* ── TRUCK CHECK MODULE ─────────────────────────── */
 .tc-step-indicator{display:flex;align-items:center;margin-bottom:32px;}
@@ -3625,7 +3629,7 @@ const TC_CHECKLISTS = {
 // STATE
 // ════════════════════════════════════════════════════
 let tcS = {step:1, unitId:null, info:{date:'',time:'',performer:'',mileage:'',notes:''}, items:{}};
-const tcGetUnit = () => TC_UNITS.find(u => u.id === tcS.unitId);
+const tcGetUnit = () => TC_UNITS.find(u => u.id === tctcS.unitId);
 const tcGetCL   = () => { const u = tcGetUnit(); return u ? TC_CHECKLISTS[u.type] : []; };
 
 const TC_TYPE_LABEL = {engine:'Engine / Pumper',tanker:'Tanker / Tender',brush:'Brush / Wildland',rescue:'Heavy Rescue',medrescue:'Medium Rescue + SCBA Cascade'};
@@ -3647,15 +3651,15 @@ function tcOldSwitchView(v, btn) {
 function tcRenderStep() {
   updateStepIndicator();
   const fns = [null, step1, step2, step3, step4];
-  document.getElementById('tc-step-content').innerHTML = fns[S.step]();
+  document.getElementById('tc-step-content').innerHTML = fns[tcS.step]();
   window.scrollTo(0,0);
 }
 
 function tcUpdateStepIndicator() {
   for (let i=1;i<=4;i++) {
     const el = document.getElementById('tcStepEl-'+i);
-    el.className = 'step'+(i<S.step?' tc-step done':i===S.step?' tc-step active':'');
-    el.querySelector('.step-num').textContent = i<S.step?'✓':i;
+    el.className = 'step'+(i<tcS.step?' tc-step done':i===tcS.step?' tc-step active':'');
+    el.querySelector('.tc-step-num').textContent = i<tcS.step?'✓':i;
   }
 }
 
@@ -3666,7 +3670,7 @@ function tcStep1() {
     <div class="page-subtitle">Choose the apparatus you are checking today.</div>
     <div class="tc-unit-grid">
       ${TC_UNITS.map(u=>`
-        <div class="tc-unit-card ${tcS.unitId===u.id?'selected':''}" onclick="tcPickUnit('${u.id}')">
+        <div class="tc-unit-card ${tctcS.unitId===u.id?'selected':''}" onclick="tcPickUnit('${u.id}')">
           <span class="tc-unit-icon">${u.icon}</span>
           <div class="tc-unit-name">${u.name}</div>
           <div class="tc-unit-type">${TC_TYPE_LABEL[u.type]}</div>
@@ -3674,20 +3678,20 @@ function tcStep1() {
     </div>
     <div class="nav-buttons">
       <div></div>
-      <button class="btn btn-primary" onclick="tcNextStep()" ${!S.unitId?'disabled':''}>Continue → Details</button>
+      <button class="btn btn-primary" onclick="tcNextStep()" ${!tcS.unitId?'disabled':''}>Continue → Details</button>
     </div>`;
 }
 
 function tcPickUnit(id) {
-  if (tcS.unitId !== id) { tcS.unitId=id; tcS.items={}; }
+  if (tctcS.unitId !== id) { tctcS.unitId=id; tcS.items={}; }
   tcRenderStep();
 }
 
 // ── Step 2: Details ───────────────────────────────
 function tcStep2() {
   const now = new Date();
-  const d = tcS.info.date || now.toISOString().split('T')[0];
-  const t = tcS.info.time || now.toTimeString().slice(0,5);
+  const d = tctcS.info.date || now.toISOString().split('T')[0];
+  const t = tctcS.info.time || now.toTimeString().slice(0,5);
   const u = tcGetUnit();
   return `
     <div class="page-title">Check Details</div>
@@ -3705,15 +3709,15 @@ function tcStep2() {
       </div>
       <div class="form-group">
         <label class="form-label">Performed By <span class="required-mark">*</span></label>
-        <input class="form-input" type="text" id="iPerformer" placeholder="Full name" value="${tcS.info.performer}" oninput="tcSi()">
+        <input class="form-input" type="text" id="iPerformer" placeholder="Full name" value="${tctcS.info.performer}" oninput="tcSi()">
       </div>
       <div class="form-group">
         <label class="form-label">Odometer / Engine Hours</label>
-        <input class="form-input" type="text" id="iMileage" placeholder="e.g. 12,450 mi or 340 hrs" value="${tcS.info.mileage}" oninput="tcSi()">
+        <input class="form-input" type="text" id="iMileage" placeholder="e.g. 12,450 mi or 340 hrs" value="${tctcS.info.mileage}" oninput="tcSi()">
       </div>
       <div class="form-group">
         <label class="form-label">General Notes (Optional)</label>
-        <textarea class="form-input" id="iNotes" placeholder="Any pre-check notes..." style="min-height:72px;resize:vertical;" oninput="tcSi()">${tcS.info.notes}</textarea>
+        <textarea class="form-input" id="iNotes" placeholder="Any pre-check notes..." style="min-height:72px;resize:vertical;" oninput="tcSi()">${tctcS.info.notes}</textarea>
       </div>
     </div></div>
     <div class="nav-buttons">
@@ -3729,12 +3733,12 @@ function tcSi() {
 
 async function tcGoChecklist() {
   tcSi();
-  if (!S.info.performer.trim()) { toast('Enter the name of the person performing the check.','error'); return; }
+  if (!tcS.info.performer.trim()) { toast('Enter the name of the person performing the check.','error'); return; }
   // Pre-fill all items as PASS
   tcGetCL().forEach((sec, si) => {
     sec.items.forEach((_, ii) => {
       const key = `${si}-${ii}`;
-      if (!S.items[key]) tcS.items[key] = {status:'pass', note:'', photos:[], carriedFail:false};
+      if (!tcS.items[key]) tctcS.items[key] = {status:'pass', note:'', photos:[], carriedFail:false};
     });
   });
   // Fetch most recent check for this unit — carry forward any FAIL items
@@ -3742,7 +3746,7 @@ async function tcGoChecklist() {
     const { data } = await db
       .from('apparatus_checks')
       .select('checklist')
-      .eq('unit_id', tcS.unitId)
+      .eq('unit_id', tctcS.unitId)
       .order('date', { ascending: false })
       .order('time', { ascending: false })
       .limit(1)
@@ -3752,7 +3756,7 @@ async function tcGoChecklist() {
         sec.items?.forEach((item, ii) => {
           if (item.status === 'fail') {
             const key = `${si}-${ii}`;
-            tcS.items[key] = {status:'fail', note:item.note||'', photos:[], carriedFail:true};
+            tctcS.items[key] = {status:'fail', note:item.note||'', photos:[], carriedFail:true};
           }
         });
       });
@@ -3768,7 +3772,7 @@ function tcStep3() {
   return `
     <div style="margin-bottom:18px;">
       <div class="page-title">${u.name}</div>
-      <div style="font-size:13px;color:var(--text-muted);">${TC_TYPE_LABEL[u.type]} · ${tcS.info.date} · ${tcS.info.performer}</div>
+      <div style="font-size:13px;color:var(--text-muted);">${TC_TYPE_LABEL[u.type]} · ${tctcS.info.date} · ${tctcS.info.performer}</div>
     </div>
     <div class="tc-summary-stats">
       <div class="tc-stat-card"><div class="tc-stat-value">${st.total}</div><div class="tc-stat-label">Total</div></div>
@@ -3804,7 +3808,7 @@ function tcRenderSec(sec, si) {
 }
 
 function tcRenderItem(si, ii, item) {
-  const key=`${si}-${ii}`, it=S.items[key]||{status:null,note:'',photos:[]};
+  const key=`${si}-${ii}`, it=tcS.items[key]||{status:null,note:'',photos:[]};
   const cls=it.status==='pass'?' passed':it.status==='fail'?' failed':it.status==='corrected'?' corrected':'';
   const dv=(it.status==='fail'||it.status==='corrected')?' visible':'';
   const isCarried = it.carriedFail === true;
@@ -3838,8 +3842,8 @@ function tcTogSec(si) {
 }
 
 function tcSetS(key, status) {
-  if (!S.items[key]) tcS.items[key]={status:null,note:'',photos:[]};
-  tcS.items[key].status=status;
+  if (!tcS.items[key]) tctcS.items[key]={status:null,note:'',photos:[]};
+  tctcS.items[key].status=status;
   const el=document.getElementById('tc-ci-'+key);
   el.className='checklist-item'+(status==='pass'?' passed':status==='fail'?' failed':status==='corrected'?' corrected':'');
   ['pass','fail','corr','na'].forEach(s=>el.querySelector('.status-btn.'+s)?.classList.toggle('active',
@@ -3853,16 +3857,16 @@ function tcSetS(key, status) {
   tcRefreshStats(); tcRefreshDot(parseInt(key.split('-')[0]));
 }
 
-function tcSaveNote(key,val) { if(!S.items[key]) tcS.items[key]={status:null,note:'',photos:[]}; tcS.items[key].note=val; }
+function tcSaveNote(key,val) { if(!tcS.items[key]) tctcS.items[key]={status:null,note:'',photos:[]}; tctcS.items[key].note=val; }
 
 function tcAddPhoto(key,input) {
   const file=input.files[0]; if(!file) return;
   const r=new FileReader();
   r.onload=e=>{
-    if(!S.items[key]) tcS.items[key]={status:null,note:'',photos:[]};
-    if(!S.items[key].photos) tcS.items[key].photos=[];
-    const idx=S.items[key].photos.length;
-    tcS.items[key].photos.push(e.target.result);
+    if(!tcS.items[key]) tctcS.items[key]={status:null,note:'',photos:[]};
+    if(!tcS.items[key].photos) tctcS.items[key].photos=[];
+    const idx=tcS.items[key].photos.length;
+    tctcS.items[key].photos.push(e.target.result);
     const pv=document.getElementById('tc-pv-'+key);
     const img=document.createElement('img');
     img.className='photo-thumb'; img.src=e.target.result; img.title='Click to remove';
@@ -3872,17 +3876,17 @@ function tcAddPhoto(key,input) {
 }
 
 function tcRmPhoto(key,idx) {
-  if(!S.items[key]?.photos) return;
-  tcS.items[key].photos.splice(idx,1);
+  if(!tcS.items[key]?.photos) return;
+  tctcS.items[key].photos.splice(idx,1);
   const pv=document.getElementById('tc-pv-'+key);
-  if(pv) pv.innerHTML=S.items[key].photos.map((p,pi)=>`<img class="tc-photo-thumb" src="${p}" title="Click to remove" onclick="tcRmPhoto('${key}',${pi})">`).join('');
+  if(pv) pv.innerHTML=tcS.items[key].photos.map((p,pi)=>`<img class="tc-photo-thumb" src="${p}" title="Click to remove" onclick="tcRmPhoto('${key}',${pi})">`).join('');
 }
 
 function tcGetStats() {
   const cl=tcGetCL(); let total=0,passed=0,failed=0,corrected=0,na=0;
   cl.forEach((sec,si)=>sec.items.forEach((_,ii)=>{
     total++;
-    const s=S.items[`${si}-${ii}`]?.status;
+    const s=tcS.items[`${si}-${ii}`]?.status;
     if(s==='pass') passed++; else if(s==='fail') failed++; else if(s==='corrected') corrected++; else if(s==='na') na++;
   }));
   return {total,passed,failed,corrected,na,checked:passed+failed+corrected+na};
@@ -3891,7 +3895,7 @@ function tcGetStats() {
 function tcSecStats(si) {
   const items=tcGetCL()[si]?.items||[]; let checked=0,failed=0,corrected=0;
   items.forEach((_,ii)=>{
-    const s=S.items[`${si}-${ii}`]?.status;
+    const s=tcS.items[`${si}-${ii}`]?.status;
     if(s) checked++;
     if(s==='fail') failed++;
     if(s==='corrected') corrected++;
@@ -3934,10 +3938,10 @@ function tcStep4() {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px;">
         <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Unit</span><strong>${u.name}</strong></div>
         <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Type</span>${TC_TYPE_LABEL[u.type]}</div>
-        <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Date / Time</span>${tcS.info.date} at ${tcS.info.time}</div>
-        <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Performed By</span><strong>${tcS.info.performer}</strong></div>
-        ${tcS.info.mileage?`<div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Odo / Hours</span>${tcS.info.mileage}</div>`:''}
-        ${tcS.info.notes?`<div style="grid-column:1/-1;"><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Notes</span>${tcS.info.notes}</div>`:''}
+        <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Date / Time</span>${tctcS.info.date} at ${tctcS.info.time}</div>
+        <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Performed By</span><strong>${tctcS.info.performer}</strong></div>
+        ${tctcS.info.mileage?`<div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Odo / Hours</span>${tctcS.info.mileage}</div>`:''}
+        ${tctcS.info.notes?`<div style="grid-column:1/-1;"><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Notes</span>${tctcS.info.notes}</div>`:''}
       </div>
     </div></div>
     <div class="tc-summary-stats">
@@ -3984,7 +3988,7 @@ function tcStep4() {
 function tcGetDefs() {
   const cl=tcGetCL(), failed=[], corrected=[];
   cl.forEach((sec,si)=>sec.items.forEach((item,ii)=>{
-    const key=`${si}-${ii}`, it=S.items[key];
+    const key=`${si}-${ii}`, it=tcS.items[key];
     if(it?.status==='fail')      failed.push({section:sec.title,item,note:it.note||'',photos:it.photos||[]});
     if(it?.status==='corrected') corrected.push({section:sec.title,item,note:it.note||'',photos:it.photos||[]});
   }));
@@ -3994,13 +3998,21 @@ function tcGetDefs() {
 // ════════════════════════════════════════════════════
 // NAV
 // ════════════════════════════════════════════════════
-function tcNextStep() { if(tcS.step<4){tcS.step++;tcRenderStep();} }
-function tcPrevStep() { if(tcS.step>1){tcS.step--;tcRenderStep();} }
+function tcNextStep() { if(tctcS.step<4){tctcS.step++;tcRenderStep();} }
+function tcPrevStep() { if(tctcS.step>1){tctcS.step--;tcRenderStep();} }
 
 // ════════════════════════════════════════════════════
 // SUBMIT
 // ════════════════════════════════════════════════════
 async function tcSubmitCheck() {
+  // Verify session before doing anything
+  const { data:{ session } } = await sb.auth.getSession();
+  if (!session) {
+    toast('You must be logged in to submit a check.', 'error');
+    goHome();
+    document.getElementById('authGate').classList.add('visible');
+    return;
+  }
   const u=tcGetUnit(), st=tcGetStats(), {failed:defs, corrected:corrs}=tcGetDefs(), cl=tcGetCL();
 
   const line = s => s+'\n';
@@ -4011,10 +4023,10 @@ async function tcSubmitCheck() {
   r+=ruler('═');
   r+=line(`Unit:         ${u.name}`);
   r+=line(`Type:         ${TC_TYPE_LABEL[u.type]}`);
-  r+=line(`Date / Time:  ${tcS.info.date} at ${tcS.info.time}`);
-  r+=line(`Performed By: ${tcS.info.performer}`);
-  if(tcS.info.mileage) r+=line(`Odo / Hours:  ${tcS.info.mileage}`);
-  if(tcS.info.notes)   r+=line(`Notes:        ${tcS.info.notes}`);
+  r+=line(`Date / Time:  ${tctcS.info.date} at ${tctcS.info.time}`);
+  r+=line(`Performed By: ${tctcS.info.performer}`);
+  if(tctcS.info.mileage) r+=line(`Odo / Hours:  ${tctcS.info.mileage}`);
+  if(tctcS.info.notes)   r+=line(`Notes:        ${tctcS.info.notes}`);
   r+='\n';
   r+=line(`RESULTS: ${st.passed} PASS  |  ${st.failed} FAIL  |  ${st.corrected} CORR  |  ${st.na} N/A`);
   r+=defs.length>0 ? line(`STATUS:  ⚠ ${defs.length} OUTSTANDING DEFICIENCY(IES) — FOLLOW-UP REQUIRED`) : line('STATUS:  ✓ ALL CLEAR');
@@ -4045,9 +4057,9 @@ async function tcSubmitCheck() {
   cl.forEach((sec,si)=>{
     r+='\n'+line(sec.title.toUpperCase());
     sec.items.forEach((item,ii)=>{
-      const key=`${si}-${ii}`, s=(tcS.items[key]?.status||'unchecked').toUpperCase().padEnd(9);
+      const key=`${si}-${ii}`, s=(tctcS.items[key]?.status||'unchecked').toUpperCase().padEnd(9);
       r+=line(`  [${s}] ${item}`);
-      if(tcS.items[key]?.note) r+=line(`             → ${tcS.items[key].note}`);
+      if(tctcS.items[key]?.note) r+=line(`             → ${tctcS.items[key].note}`);
     });
   });
   r+='\n'+ruler('═');
@@ -4055,38 +4067,38 @@ async function tcSubmitCheck() {
 
   const payload={
     id:Date.now().toString(), timestamp:new Date().toISOString(),
-    unit_id:S.unitId, unit_name:u.name, unit_type:u.type,
-    date:S.info.date, time:S.info.time, performer:S.info.performer,
-    mileage:S.info.mileage, notes:S.info.notes, stats:st,
+    unit_id:tcS.unitId, unit_name:u.name, unit_type:u.type,
+    date:tcS.info.date, time:tcS.info.time, performer:tcS.info.performer,
+    mileage:tcS.info.mileage, notes:tcS.info.notes, stats:st,
     deficiencies:[...defs, ...corrs.map(c=>({...c, corrected:true}))],
     checklist:cl.map((sec,si)=>({title:sec.title,items:sec.items.map((item,ii)=>{
       const key=`${si}-${ii}`;
-      return {item,status:S.items[key]?.status||'unchecked',note:S.items[key]?.note||'',photos:S.items[key]?.photos||[]};
+      return {item,status:tcS.items[key]?.status||'unchecked',note:tcS.items[key]?.note||'',photos:tcS.items[key]?.photos||[]};
     })}))
   };
   await tcSaveToHistory(payload);
 
   if(EMAILJS_PUBLIC_KEY==='YOUR_PUBLIC_KEY') {
     toast('Saved to history. Add EmailJS keys to enable email.','error');
-    setTimeout(resetApp,2200); return;
+    setTimeout(tcResetApp,2200); return;
   }
 
   document.getElementById('tcLoadingOverlay').classList.add('visible');
-  const subj=`[QFD Check] ${u.name} — ${tcS.info.date} — ${defs.length>0?'⚠ '+defs.length+' DEFICIENCY':corrs.length>0?'✓ CLEAR / '+corrs.length+' CORRECTED':'✓ ALL CLEAR'}`;
+  const subj=`[QFD Check] ${u.name} — ${tctcS.info.date} — ${defs.length>0?'⚠ '+defs.length+' DEFICIENCY':corrs.length>0?'✓ CLEAR / '+corrs.length+' CORRECTED':'✓ ALL CLEAR'}`;
   try {
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {subject:subj, to_email:'Quapawfiredepartment@gmail.com', report:r});
     document.getElementById('tcLoadingOverlay').classList.remove('visible');
     toast('✓ Report sent to Quapawfiredepartment@gmail.com','success');
-    setTimeout(resetApp,2000);
+    setTimeout(tcResetApp,2000);
   } catch(err) {
     document.getElementById('tcLoadingOverlay').classList.remove('visible');
     toast('Email failed: '+(err?.text||err?.message||'Unknown error')+' — Check saved to history.','error');
-    setTimeout(resetApp,3000);
+    setTimeout(tcResetApp,3000);
   }
 }
 
 function tcResetApp() {
-  S={step:1,unitId:null,info:{date:'',time:'',performer:'',mileage:'',notes:''},items:{}};
+  tcS={step:1,unitId:null,info:{date:'',time:'',performer:'',mileage:'',notes:''},items:{}};
   tcRenderStep();
 }
 
