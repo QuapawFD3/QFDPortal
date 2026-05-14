@@ -8,6 +8,13 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  const EMAILJS_PUBLIC_KEY  = 'ycLQ57A_3TaYrVXel';
+  const EMAILJS_SERVICE_ID  = 'service_1t5c2es';
+  const EMAILJS_TEMPLATE_ID = 'template_z853n2o';
+  emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+</script>
 <style>
 :root{
   --bg:#0d1117;--surface:#161b22;--surface2:#1f2937;--border:#30363d;
@@ -406,6 +413,87 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
 .auth-signout:hover{color:var(--red);}
 /* lock icon on gated section labels */
 .gate-lock{font-size:10px;margin-left:5px;opacity:.5;}
+
+/* ── TRUCK CHECK MODULE ─────────────────────────── */
+.tc-step-indicator{display:flex;align-items:center;margin-bottom:32px;}
+.tc-step{display:flex;align-items:center;flex:1;}
+.tc-step-num{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;background:var(--surface);color:var(--text-muted);flex-shrink:0;transition:all .3s;}
+.tc-step-label{font-size:11px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin-left:8px;transition:color .3s;white-space:nowrap;}
+.tc-step-line{flex:1;height:2px;background:var(--border);margin:0 12px;transition:background .3s;}
+.tc-step.done .tc-step-num{background:var(--green);border-color:var(--green);color:#fff;}
+.tc-step.active .tc-step-num{background:var(--red);border-color:var(--red);color:#fff;}
+.tc-step.active .tc-step-label,.tc-step.done .tc-step-label{color:var(--text);}
+.tc-step.done .tc-step-label{color:#4ade80;}
+.tc-step.done+.tc-step-line{background:var(--green);}
+.tc-section-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden;}
+.tc-section-header{padding:13px 20px;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+.tc-section-title{font-family:'Oswald',sans-serif;font-size:14px;font-weight:600;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;}
+.tc-section-progress{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted);margin-right:10px;}
+.tc-collapse-btn{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:0;transition:transform .2s;line-height:1;}
+.tc-collapse-btn.collapsed{transform:rotate(-90deg);}
+.tc-section-body.collapsed{display:none;}
+.tc-checklist-item{border-bottom:1px solid var(--border);transition:background .15s;}
+.tc-checklist-item:last-child{border-bottom:none;}
+.tc-item-row{display:flex;align-items:center;padding:11px 20px;gap:16px;}
+.tc-item-text{flex:1;font-size:14px;}
+.tc-status-buttons{display:flex;gap:4px;flex-shrink:0;}
+.tc-status-btn{width:52px;height:30px;border:1px solid var(--border);border-radius:4px;background:transparent;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;letter-spacing:.5px;}
+.tc-status-btn:hover{border-color:var(--text-muted);color:var(--text-muted);}
+.tc-status-btn.pass.active{background:var(--pass-bg);border-color:var(--green);color:#4ade80;}
+.tc-status-btn.fail.active{background:var(--fail-bg);border-color:var(--red);color:#f87171;}
+.tc-status-btn.na.active{background:rgba(139,148,158,.1);border-color:var(--text-muted);color:var(--text-muted);}
+.tc-status-btn.corr.active{background:rgba(245,158,11,.12);border-color:var(--amber);color:var(--amber);}
+.tc-checklist-item.failed{background:rgba(220,38,38,.05);}
+.tc-checklist-item.passed{background:rgba(22,163,74,.03);}
+.tc-checklist-item.corrected{background:rgba(245,158,11,.04);}
+.tc-carry-flag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.5px;color:#f87171;background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);border-radius:3px;padding:1px 5px;margin-left:8px;vertical-align:middle;}
+.tc-item-deficiency{padding:0 20px 12px 52px;display:none;}
+.tc-item-deficiency.visible{display:block;}
+.tc-deficiency-note{width:100%;background:var(--bg);border:1px solid rgba(220,38,38,.4);border-radius:4px;color:var(--text);font-family:'Barlow',sans-serif;font-size:14px;padding:8px 12px;resize:vertical;min-height:58px;margin-bottom:8px;}
+.tc-deficiency-note::placeholder{color:var(--text-dim);}
+.tc-photo-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text-muted);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;}
+.tc-photo-btn:hover{border-color:var(--amber);color:var(--amber);}
+.tc-photo-thumb{width:44px;height:44px;border-radius:4px;object-fit:cover;border:1px solid var(--border);cursor:pointer;}
+.tc-section-status-dot{width:8px;height:8px;border-radius:50%;background:var(--border);display:inline-block;margin-right:10px;flex-shrink:0;transition:background .2s;}
+.tc-section-status-dot.complete{background:var(--green);}
+.tc-section-status-dot.has-fails{background:var(--red);}
+.tc-section-status-dot.partial{background:var(--amber);}
+.tc-unit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-top:8px;}
+.tc-unit-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:18px 16px;cursor:pointer;transition:all .2s;text-align:center;}
+.tc-unit-card:hover{border-color:var(--red);background:var(--red-glow);transform:translateY(-2px);}
+.tc-unit-card.selected{border-color:var(--red);background:var(--red-glow);}
+.tc-unit-icon{font-size:28px;margin-bottom:8px;display:block;}
+.tc-unit-name{font-family:'Oswald',sans-serif;font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+.tc-unit-type{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.tc-summary-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;}
+.tc-stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center;}
+.tc-stat-value{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:600;line-height:1;margin-bottom:3px;}
+.tc-stat-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);}
+.tc-stat-card.pass .tc-stat-value{color:#4ade80;}
+.tc-stat-card.fail .tc-stat-value{color:#f87171;}
+.tc-stat-card.corr .tc-stat-value{color:var(--amber);}
+.tc-stat-card.na .tc-stat-value{color:var(--text-muted);}
+.tc-status-banner{padding:13px 18px;border-radius:var(--radius);margin-bottom:20px;font-weight:600;font-size:14px;display:flex;align-items:center;gap:10px;}
+.tc-status-banner.all-clear{background:rgba(22,163,74,.15);border:1px solid #16a34a;color:#4ade80;}
+.tc-status-banner.has-deficiencies{background:var(--fail-bg);border:1px solid var(--red);color:#f87171;}
+.tc-deficiency-entry{background:var(--fail-bg);border:1px solid rgba(220,38,38,.25);border-radius:var(--radius);padding:11px 15px;margin-bottom:8px;}
+.tc-deficiency-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:#f87171;margin-bottom:2px;}
+.tc-deficiency-item-name{font-size:14px;color:var(--text);}
+.tc-deficiency-item-note{font-size:12px;color:var(--text-muted);margin-top:3px;font-style:italic;}
+.tc-history-table{width:100%;border-collapse:collapse;}
+.tc-history-table th{font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);padding:11px 16px;text-align:left;border-bottom:2px solid var(--border);}
+.tc-history-table td{padding:11px 16px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:middle;}
+.tc-history-table tr:hover td{background:var(--surface2);}
+.tc-progress-bar-wrap{background:var(--surface2);border-radius:4px;height:5px;margin-bottom:22px;overflow:hidden;}
+.tc-progress-bar-fill{height:100%;background:var(--red);border-radius:4px;transition:width .4s ease;}
+@media(max-width:640px){
+  .tc-step-label{display:none;}
+  .tc-unit-grid{grid-template-columns:repeat(2,1fr);}
+  .tc-item-row{padding:10px 14px;gap:10px;}
+  .tc-item-deficiency{padding:0 14px 12px 14px;}
+  .tc-status-btn{width:44px;font-size:10px;}
+  .tc-summary-stats{grid-template-columns:repeat(3,1fr);}
+}
 </style>
 </head>
 <body>
@@ -499,12 +587,12 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
     <div id="gatedSections" style="display:none;">
       <div class="portal-section-label">Operational Tools <span class="gate-lock">🔓</span></div>
       <div class="module-grid">
-        <a class="module-card" href="https://checklist.quapawfire.com" style="--module-color:#dc2626">
+        <div class="module-card" style="--module-color:#dc2626" onclick="openModule('truck')">
           <span class="module-badge badge-live">LIVE</span>
           <span class="module-icon">🚒</span>
           <div class="module-name">Truck Checks</div>
           <div class="module-desc">NFPA 1911 apparatus inspections</div>
-        </a>
+        </div>
         <div class="module-card" style="--module-color:#2563eb" onclick="openModule('hose')">
           <span class="module-badge badge-live">LIVE</span>
           <span class="module-icon">🚿</span>
@@ -1289,7 +1377,7 @@ function cs(key){
 }
 async function openModule(mod){
   // Check auth for gated modules
-  const gated = ['hose','scba','hydrant','roster'];
+  const gated = ['hose','scba','hydrant','roster','truck'];
   if(gated.includes(mod)){
     const { data:{ session } } = await sb.auth.getSession();
     if(!session){ goHome(); document.getElementById('authGate').classList.add('visible'); return; }
@@ -1307,6 +1395,7 @@ async function openModule(mod){
   if(mod==='hydrant'){showView('hydrant');initHydrantModule();return;}
   if(mod==='scba'){showView('scba');initScbaModule();return;}
   if(mod==='hose'){showView('hose');initHoseModule();return;}
+  if(mod==='truck'){showView('truck');tcInit();return;}
 }
 
 // ═══════════════════════════════════════════════
@@ -3458,6 +3547,773 @@ function openHydTestFor(label){
     if(sel.options[i].value===label){ sel.selectedIndex=i; break; }
   }
 }
+// ════════════════════════════════════════════════════
+// TRUCK CHECK MODULE
+// ════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
+// UNITS
+// ════════════════════════════════════════════════════
+const TC_UNITS = [
+  {id:'brush1',   name:'Brush 1',       type:'brush',     icon:'🌲'},
+  {id:'brush18',  name:'Brush 18',      type:'brush',     icon:'🌲'},
+  {id:'brush20',  name:'Brush 20',      type:'brush',     icon:'🌲'},
+  {id:'brush27',  name:'Brush 27',      type:'brush',     icon:'🌲'},
+  {id:'brush28',  name:'Brush 28',      type:'brush',     icon:'🌲'},
+  {id:'eng21',    name:'Engine 21',     type:'engine',    icon:'🚒'},
+  {id:'eng22',    name:'Engine 22',     type:'engine',    icon:'🚒'},
+  {id:'res23',    name:'Rescue 23',     type:'rescue',    icon:'🔧'},
+  {id:'medres',   name:'Rescue 11',     type:'medrescue', icon:'💨'},
+  {id:'tank2',    name:'Tanker 2',      type:'tanker',    icon:'🚛'},
+  {id:'tank25',   name:'Tanker 25',     type:'tanker',    icon:'🚛'},
+];
+
+// ════════════════════════════════════════════════════
+// CHECKLISTS
+// ════════════════════════════════════════════════════
+const TC_CHECKLISTS = {
+  engine:[
+    {title:'Cab & Driver Area',items:['Fuel level — 3/4 tank minimum','Engine oil — within normal range','Coolant level — within normal range','Transmission fluid — within normal range','Power steering fluid — within normal range','Brake fluid — within normal range','Air brake pressure builds to operating range','Parking brake functional','Windshield clean and unobstructed','Windshield wipers and washers operational','Horn functional','Seatbelts present and functional — all positions','No dashboard warning or fault lights active','Mirrors properly adjusted','Radio on correct channel and operational','MDT / CAD terminal operational (if equipped)']},
+    {title:'Exterior & Lighting',items:['Headlights — low beam operational','Headlights — high beam operational','Taillights operational','Brake lights operational','Turn signals — all four corners operational','Emergency warning lights — all zones operational','Scene / work lights operational','Step / ground lights operational','Reverse lights and backup alarm functional','All tires properly inflated and free of damage','No visible fluid leaks under apparatus','All compartment doors close and latch securely','Handrails and steps secure and undamaged','Chassis and body free of significant damage','Ground ladders properly mounted and secured']},
+    {title:'Engine Compartment',items:['No evidence of fluid leaks in compartment','Drive belts in good condition — no cracking or fraying','All hoses in good condition — no bulging or leaks','Air filter restriction indicator in green zone','Engine starts and runs smoothly','No unusual noises at idle','Battery terminals secure and free of corrosion','Alternator / charging system operational']},
+    {title:'Pump & Water System',items:['Booster tank full (at required operating level)','Pump primer oil level adequate','Tank-to-pump valve opens and closes properly','All discharge valves operational and capped','All intake valves operational and capped','Steamer / LDH intake cap secure','Pump panel gauges functional and zeroed','Pump panel lights operational','Pump shift engages and disengages properly','Relief / governor valve operational','All drain valves operational','Booster reel charged and hose in good condition (if equipped)','Foam tank level adequate (if equipped)','Foam proportioner system operational (if equipped)']},
+    {title:'Hose Load & Nozzles',items:['Pre-connect attack lines — loaded correctly and secured','Supply hose — correct quantity loaded and in good condition','Attack hose — correct quantity and in good condition','All nozzles present, accounted for, and functional','Nozzle gaskets in good condition','Hose appliances present — wye, siamese, reducers','Hose straps and bands secure','Smooth-bore tips present and accounted for (if equipped)']},
+    {title:'Ground Ladders',items:['Extension ladder present and free of damage','Roof ladder present and free of damage','Attic / folding ladder present and secure (if equipped)','All ladder mounts and restraints secure','Ladder rungs free of bends, cracks, or corrosion','Halyard rope in good condition — no fraying','Roof hooks functional and secure']},
+    {title:'SCBA & Breathing Equipment',items:['All SCBA units present and accounted for','All SCBA cylinders at full pressure (4500 PSI or rated capacity)','SCBA harnesses and straps in good condition','SCBA face pieces — lenses clear, seals undamaged','PASS devices functional and armed','Spare SCBA cylinders — correct quantity present','All cylinders within hydrostatic test date']},
+    {title:'Hand Tools & Equipment',items:['Irons (halligan & flat-head axe) present and secured','Pickhead axe present and secured','Pike poles / hooks present','Salvage covers present and in good condition','Portable handlights — charged and operational','Scene / tripod lights present and operational','Thermal imaging camera (TIC) charged and operational','EMS / first aid kit complete and in-date']},
+    {title:'PPE & Safety Equipment',items:['Structural PPE (turnout gear) — all sets present and serviceable','Helmets present and undamaged','Gloves — adequate supply','Traffic / safety vests present','Wheel chocks present (minimum 2)','Road flares / traffic cones present']}
+  ],
+  tanker:[
+    {title:'Cab & Driver Area',items:['Fuel level — 3/4 tank minimum','Engine oil — within normal range','Coolant level — within normal range','Transmission fluid — within normal range','Air brake pressure builds to operating range','Parking brake functional','Windshield clean and unobstructed','Windshield wipers and washers operational','Horn functional','Seatbelts present and functional — all positions','No dashboard warning or fault lights active','Mirrors properly adjusted','Radio on correct channel and operational']},
+    {title:'Exterior & Lighting',items:['Headlights — low and high beam operational','Taillights and brake lights operational','Turn signals — all four corners operational','Emergency warning lights — all zones operational','Scene / work lights operational','Reverse lights and backup alarm functional','All tires properly inflated and free of damage','No visible fluid leaks under apparatus','All compartment doors close and latch securely','Handrails and steps secure','Chassis and body free of significant damage','Tank vents unobstructed and functional']},
+    {title:'Engine Compartment',items:['No evidence of fluid leaks in compartment','All drive belts and hoses in good condition','Engine starts and runs smoothly','No unusual noises at idle','Battery terminals secure and free of corrosion','Alternator / charging system operational']},
+    {title:'Tank & Fill System',items:['Main tank full (rated capacity)','Tank structural integrity — no visible cracks or leaks','Tank-to-fill valve functional','Top fill valve opens and closes properly','Direct tank fill connection capped and secure','Tank vent pipe clear and unobstructed','Overflow pipe clear and unobstructed','Tank sight gauge / level indicator functional','Quick-fill / nurse tender system operational (if equipped)','Hard suction hose present and in good condition']},
+    {title:'Dump Valves & Portable Equipment',items:['Main dump valve(s) open and close properly','Dump chute deploys and stows properly','Rear dump valve capped and secure','Side dump valve(s) capped and secure (if equipped)','Portable folding tank(s) present and in good condition','Portable tank carry straps / tote present','Low-head dump suction strainer present','Porta-pond / jet siphon present (if equipped)']},
+    {title:'Pump & Discharge System',items:['Transfer / auxiliary pump operational (if equipped)','Pump discharge valves operational and capped','Pump panel gauges functional','Pump engages and disengages properly','Hose — correct quantity and in good condition','Nozzles / appliances present and functional']},
+    {title:'PPE & Safety Equipment',items:['Structural PPE — all sets present and serviceable','Traffic / safety vests present','Wheel chocks present (minimum 2)','Road flares / traffic cones present','EMS / first aid kit present']}
+  ],
+  brush:[
+    {title:'Cab & Driver Area',items:['Fuel level — 3/4 tank minimum','Engine oil — within normal range','Coolant level — within normal range','Transmission fluid — within normal range','4WD system operational and all modes engage','Parking brake functional','Windshield clean and unobstructed','Windshield wipers operational','Horn functional','Seatbelts present and functional — all positions','No dashboard warning or fault lights active','Mirrors properly adjusted','Radio on correct channel and operational']},
+    {title:'Exterior & Lighting',items:['Headlights — low and high beam operational','Taillights and brake lights operational','Turn signals — all four corners operational','Emergency warning lights operational','Scene / work lights operational','Reverse lights and backup alarm functional','All tires — properly inflated, adequate tread, no damage','No visible fluid leaks under apparatus','Underbody skid plates / brush guards secure (if equipped)','All compartment doors latch securely']},
+    {title:'Engine & Drivetrain',items:['Engine starts and runs smoothly','No unusual noises at idle or under load','All belts and hoses in good condition','Battery terminals secure and free of corrosion','Exhaust system secure and free of leaks','Locking differentials operational (if equipped)','PTO operational (if equipped)','Winch operational and cable in good condition (if equipped)']},
+    {title:'Water System',items:['Booster tank full','Pump prime functional','Pump engages and disengages properly','All discharge valves operational and capped','Booster reel charged and hose in good condition','Nozzle(s) present and functional','All drain valves operational','Foam system operational (if equipped)']},
+    {title:'Wildland Hand Tools',items:['Pulaski(s) present and secured','McLeod(s) / Council rake(s) present and secured','Shovel(s) present and secured','Hand saw(s) present and secured','Chainsaw present, fueled and operational (if equipped)','Drip torch present and fueled (if equipped)','Bladder bag(s) present and operational','Flagging tape and marking materials present','Backpack pump(s) present (if equipped)']},
+    {title:'Communications & Navigation',items:['Portable radios — charged and on correct channel','Radio charger / spare battery present','Map / compass / GPS device present','Area road map current and present']},
+    {title:'PPE & Safety Equipment',items:['Wildland PPE (Nomex shirt and pants) — all sets present and serviceable','Wildland helmets present','Fire shelters — one per person, properly packed, in-date','Leather gloves — adequate supply','Eye protection present','EMS / first aid kit complete and in-date','Traffic / safety vests present','Wheel chocks present']}
+  ],
+  rescue:[
+    {title:'Cab & Driver Area',items:['Fuel level — 3/4 tank minimum','Engine oil — within normal range','Coolant level — within normal range','Transmission fluid — within normal range','Parking brake functional','Windshield clean and unobstructed','Windshield wipers operational','Horn functional','Seatbelts present and functional — all positions','No dashboard warning or fault lights active','Mirrors properly adjusted','Radio on correct channel and operational','MDT / CAD terminal operational (if equipped)']},
+    {title:'Exterior & Lighting',items:['Headlights — low and high beam operational','Taillights and brake lights operational','Turn signals — all four corners operational','Emergency warning lights — all zones operational','Scene / work lights — all sides operational','Floodlights / telescoping lights operational (if equipped)','Reverse lights and backup alarm functional','All tires properly inflated and free of damage','No visible fluid leaks','All compartment doors close and latch securely','Handrails and steps secure']},
+    {title:'Generator & Electrical',items:['Generator starts and runs properly','Generator fuel level adequate','Generator output voltage within spec','Generator circuit breakers functional','All outlet receptacles functional and weatherproofed','Power cables — 100 ft minimum, in good condition','Junction / distribution box functional']},
+    {title:'Rescue & Extrication Equipment',items:['Hydraulic spreader — fluid level adequate and operational','Hydraulic cutters operational','Hydraulic ram(s) operational','High-lift jack present and functional','Rescue straps / chains present and in good condition','Cribbing — adequate supply and in good condition','Come-along / manual winch present','Reciprocating saw with rescue blades operational','Lifting air bags — all present and functional (if equipped)','Stabilization struts present and functional (if equipped)']},
+    {title:'Medical Equipment',items:['AED — fully charged, pads in-date','Oxygen — cylinder pressure adequate, regulator functional','Stretcher / backboards present and in good condition','Cervical collars — full range of sizes present','Trauma bags — stocked and in-date','Airway management kit complete','Bleeding control kits (tourniquets, packing gauze) present','Cold weather / hypothermia blankets present']},
+    {title:'Hand & Power Tools',items:['Reciprocating saw operational and blades stocked','Circular saw operational — masonry and metal blades present','Chain saw present, fueled and operational (if equipped)','Drill / driver operational and batteries charged','Pry bars — full set present','Bolt cutters present']},
+    {title:'Lighting & Scene Equipment',items:['Portable LED handlights — all charged and operational','Scene tripod lights operational','Power extension cords present','Traffic cones / road flares — adequate supply','Traffic / safety vests present','Wheel chocks present (minimum 2)']}
+  ],
+  medrescue:[
+    {title:'Cab & Driver Area',items:['Fuel level — 3/4 tank minimum','Engine oil — within normal range','Coolant level — within normal range','Transmission fluid — within normal range','Parking brake functional','Windshield clean and unobstructed','Windshield wipers operational','Horn functional','Seatbelts present and functional — all positions','No dashboard warning or fault lights active','Mirrors properly adjusted','Radio on correct channel and operational','MDT / CAD terminal operational (if equipped)']},
+    {title:'Exterior & Lighting',items:['Headlights — low and high beam operational','Taillights and brake lights operational','Turn signals — all four corners operational','Emergency warning lights — all zones operational','Scene / work lights — all sides operational','Reverse lights and backup alarm functional','All tires properly inflated and free of damage','No visible fluid leaks','All compartment doors close and latch securely','Handrails and steps secure']},
+    {title:'Generator & Electrical',items:['Generator starts and runs properly','Generator fuel level adequate','Generator output voltage within spec','All outlet receptacles functional','Power cables — 100 ft minimum, in good condition']},
+    {title:'Rescue & Extrication Equipment',items:['Hydraulic spreader operational','Hydraulic cutters operational','Hydraulic ram(s) operational','High-lift jack present and functional','Rescue straps / chains present and in good condition','Cribbing — adequate supply and in good condition','Come-along / manual winch present','Reciprocating saw with rescue blades operational']},
+    {title:'Medical Equipment',items:['AED — fully charged, pads in-date','Oxygen — cylinder pressure adequate, regulator functional','Stretcher / backboards present and in good condition','Cervical collars — full range of sizes present','Trauma bags — stocked and in-date','Airway management kit complete','Bleeding control kits (tourniquets, packing gauze) present']},
+    {title:'SCBA Cascade / Refill Station',items:['Cascade cylinders — all charged to operating pressure','Cascade manifold — no leaks detected','Cylinder isolation valves open and close properly','Fill panel gauges accurate and functional','Fill whips in good condition — no cracking or damage','Cylinder mounts / rack secure — no movement','All cascade cylinders within hydrostatic test date','Carbon monoxide monitor / alarm operational and in-date','Spare SCBA cylinders — correct quantity present and fully charged','All spare cylinders within hydrostatic test date','Cylinder inventory log current and signed','Low-pressure / depleted cylinders segregated for refill','Spare valve O-rings available']},
+    {title:'SCBA Units & Masks',items:['All SCBA units present and accounted for','SCBA harnesses and frames — no visible damage','Face pieces — lenses clear, seals undamaged','Face piece straps in good condition — no cracking','PASS devices functional and armed','All units within required flow-test period']},
+    {title:'Hand Tools & Lighting',items:['Pry bars — full set present','Bolt cutters present','Drill / driver operational and batteries charged','Portable LED handlights — all charged and operational','Scene tripod lights operational','Power extension cords present','Traffic cones / road flares — adequate supply','Traffic / safety vests present','Wheel chocks present (minimum 2)']}
+  ]
+};
+
+// ════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════
+let tcS = {step:1, unitId:null, info:{date:'',time:'',performer:'',mileage:'',notes:''}, items:{}};
+const tcGetUnit = () => TC_UNITS.find(u => u.id === tcS.unitId);
+const tcGetCL   = () => { const u = tcGetUnit(); return u ? TC_CHECKLISTS[u.type] : []; };
+
+const TC_TYPE_LABEL = {engine:'Engine / Pumper',tanker:'Tanker / Tender',brush:'Brush / Wildland',rescue:'Heavy Rescue',medrescue:'Medium Rescue + SCBA Cascade'};
+
+// ════════════════════════════════════════════════════
+// VIEW SWITCH
+// ════════════════════════════════════════════════════
+function tcOldSwitchView(v, btn) {
+  document.querySelectorAll('.view').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(e => e.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (v==='history') tcRenderHistory();
+}
+
+// ════════════════════════════════════════════════════
+// RENDER STEPS
+// ════════════════════════════════════════════════════
+function tcRenderStep() {
+  updateStepIndicator();
+  const fns = [null, step1, step2, step3, step4];
+  document.getElementById('tc-step-content').innerHTML = fns[S.step]();
+  window.scrollTo(0,0);
+}
+
+function tcUpdateStepIndicator() {
+  for (let i=1;i<=4;i++) {
+    const el = document.getElementById('tcStepEl-'+i);
+    el.className = 'step'+(i<S.step?' tc-step done':i===S.step?' tc-step active':'');
+    el.querySelector('.step-num').textContent = i<S.step?'✓':i;
+  }
+}
+
+// ── Step 1: Unit ──────────────────────────────────
+function tcStep1() {
+  return `
+    <div class="page-title">Select Unit</div>
+    <div class="page-subtitle">Choose the apparatus you are checking today.</div>
+    <div class="tc-unit-grid">
+      ${TC_UNITS.map(u=>`
+        <div class="tc-unit-card ${tcS.unitId===u.id?'selected':''}" onclick="tcPickUnit('${u.id}')">
+          <span class="tc-unit-icon">${u.icon}</span>
+          <div class="tc-unit-name">${u.name}</div>
+          <div class="tc-unit-type">${TC_TYPE_LABEL[u.type]}</div>
+        </div>`).join('')}
+    </div>
+    <div class="nav-buttons">
+      <div></div>
+      <button class="btn btn-primary" onclick="tcNextStep()" ${!S.unitId?'disabled':''}>Continue → Details</button>
+    </div>`;
+}
+
+function tcPickUnit(id) {
+  if (tcS.unitId !== id) { tcS.unitId=id; tcS.items={}; }
+  tcRenderStep();
+}
+
+// ── Step 2: Details ───────────────────────────────
+function tcStep2() {
+  const now = new Date();
+  const d = tcS.info.date || now.toISOString().split('T')[0];
+  const t = tcS.info.time || now.toTimeString().slice(0,5);
+  const u = tcGetUnit();
+  return `
+    <div class="page-title">Check Details</div>
+    <div class="page-subtitle">Unit: <strong>${u.name}</strong> &nbsp;·&nbsp; ${TC_TYPE_LABEL[u.type]}</div>
+    <div class="tc-section-card"><div style="padding:22px;">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Date <span class="required-mark">*</span></label>
+          <input class="form-input" type="date" id="iDate" value="${d}" oninput="tcSi()">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Time <span class="required-mark">*</span></label>
+          <input class="form-input" type="time" id="iTime" value="${t}" oninput="tcSi()">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Performed By <span class="required-mark">*</span></label>
+        <input class="form-input" type="text" id="iPerformer" placeholder="Full name" value="${tcS.info.performer}" oninput="tcSi()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Odometer / Engine Hours</label>
+        <input class="form-input" type="text" id="iMileage" placeholder="e.g. 12,450 mi or 340 hrs" value="${tcS.info.mileage}" oninput="tcSi()">
+      </div>
+      <div class="form-group">
+        <label class="form-label">General Notes (Optional)</label>
+        <textarea class="form-input" id="iNotes" placeholder="Any pre-check notes..." style="min-height:72px;resize:vertical;" oninput="tcSi()">${tcS.info.notes}</textarea>
+      </div>
+    </div></div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="tcPrevStep()">← Back</button>
+      <button class="btn btn-primary" onclick="tcGoChecklist()">Continue → Checklist</button>
+    </div>`;
+}
+
+function tcSi() {
+  const m = {date:'iDate',time:'iTime',performer:'iPerformer',mileage:'iMileage',notes:'iNotes'};
+  Object.entries(m).forEach(([k,id])=>{ const el=document.getElementById(id); if(el) tcS.info[k]=el.value; });
+}
+
+async function tcGoChecklist() {
+  tcSi();
+  if (!S.info.performer.trim()) { toast('Enter the name of the person performing the check.','error'); return; }
+  // Pre-fill all items as PASS
+  tcGetCL().forEach((sec, si) => {
+    sec.items.forEach((_, ii) => {
+      const key = `${si}-${ii}`;
+      if (!S.items[key]) tcS.items[key] = {status:'pass', note:'', photos:[], carriedFail:false};
+    });
+  });
+  // Fetch most recent check for this unit — carry forward any FAIL items
+  try {
+    const { data } = await db
+      .from('apparatus_checks')
+      .select('checklist')
+      .eq('unit_id', tcS.unitId)
+      .order('date', { ascending: false })
+      .order('time', { ascending: false })
+      .limit(1)
+      .single();
+    if (data?.checklist) {
+      data.checklist.forEach((sec, si) => {
+        sec.items?.forEach((item, ii) => {
+          if (item.status === 'fail') {
+            const key = `${si}-${ii}`;
+            tcS.items[key] = {status:'fail', note:item.note||'', photos:[], carriedFail:true};
+          }
+        });
+      });
+    }
+  } catch(e) { /* no previous check found — fine */ }
+  tcNextStep();
+}
+
+// ── Step 3: Checklist ─────────────────────────────
+function tcStep3() {
+  const u = tcGetUnit(), cl = tcGetCL(), st = tcGetStats();
+  const pct = st.total ? Math.round(st.checked/st.total*100) : 0;
+  return `
+    <div style="margin-bottom:18px;">
+      <div class="page-title">${u.name}</div>
+      <div style="font-size:13px;color:var(--text-muted);">${TC_TYPE_LABEL[u.type]} · ${tcS.info.date} · ${tcS.info.performer}</div>
+    </div>
+    <div class="tc-summary-stats">
+      <div class="tc-stat-card"><div class="tc-stat-value">${st.total}</div><div class="tc-stat-label">Total</div></div>
+      <div class="tc-stat-card pass"><div class="tc-stat-value" id="tc-spPass">${st.passed}</div><div class="tc-stat-label">Pass</div></div>
+      <div class="tc-stat-card fail"><div class="tc-stat-value" id="tc-spFail">${st.failed}</div><div class="tc-stat-label">Fail</div></div>
+      <div class="tc-stat-card corr"><div class="tc-stat-value" id="tc-spCorr">${st.corrected}</div><div class="tc-stat-label">Corr</div></div>
+      <div class="tc-stat-card na"><div class="tc-stat-value" id="tc-spNA">${st.na}</div><div class="tc-stat-label">N/A</div></div>
+    </div>
+    <div class="tc-progress-bar-wrap"><div class="tc-progress-bar-fill" id="tc-pgBar" style="width:${pct}%"></div></div>
+    ${cl.map((sec,si)=>renderSec(sec,si)).join('')}
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="tcPrevStep()">← Back</button>
+      <button class="btn btn-primary" onclick="tcGoReview()">Review & Submit →</button>
+    </div>`;
+}
+
+function tcRenderSec(sec, si) {
+  const ss = tcSecStats(si);
+  const dot = ss.failed>0?'has-fails':ss.checked===sec.items.length?'complete':ss.checked>0?'partial':'';
+  return `
+    <div class="tc-section-card">
+      <div class="tc-section-header" onclick="tcTogSec(${si})">
+        <div class="tc-section-title"><span class="section-status-dot ${dot}" id="tc-dot-${si}"></span>${sec.title}</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="tc-section-progress" id="tc-sp-${si}">${ss.checked}/${sec.items.length}</span>
+          <button class="tc-collapse-btn" id="tc-cb-${si}">▼</button>
+        </div>
+      </div>
+      <div class="tc-section-body" id="tc-sb-${si}">
+        ${sec.items.map((item,ii)=>renderItem(si,ii,item)).join('')}
+      </div>
+    </div>`;
+}
+
+function tcRenderItem(si, ii, item) {
+  const key=`${si}-${ii}`, it=S.items[key]||{status:null,note:'',photos:[]};
+  const cls=it.status==='pass'?' passed':it.status==='fail'?' failed':it.status==='corrected'?' corrected':'';
+  const dv=(it.status==='fail'||it.status==='corrected')?' visible':'';
+  const isCarried = it.carriedFail === true;
+  const notePlaceholder = it.status==='corrected' ? 'Describe what was corrected...' : 'Describe the deficiency...';
+  const photos=(it.photos||[]).map((p,pi)=>`<img class="tc-photo-thumb" src="${p}" title="Click to remove" onclick="tcRmPhoto('${key}',${pi})">`).join('');
+  return `
+    <div class="checklist-item${cls}" id="tc-ci-${key}">
+      <div class="tc-item-row">
+        <div class="tc-item-text">${item}${isCarried?'<span class="tc-carry-flag">PREV FAIL</span>':''}</div>
+        <div class="tc-status-buttons">
+          <button class="tc-status-btn pass ${it.status==='pass'?'active':''}" onclick="tcSetS('${key}','pass')">PASS</button>
+          <button class="tc-status-btn fail ${it.status==='fail'?'active':''}" onclick="tcSetS('${key}','fail')">FAIL</button>
+          <button class="tc-status-btn corr ${it.status==='corrected'?'active':''}" onclick="tcSetS('${key}','corrected')">CORR</button>
+          <button class="tc-status-btn na ${it.status==='na'?'active':''}" onclick="tcSetS('${key}','na')">N/A</button>
+        </div>
+      </div>
+      <div class="item-deficiency${dv}" id="tc-def-${key}">
+        <textarea class="tc-deficiency-note" placeholder="${notePlaceholder}" rows="2" onchange="saveNote('${key}',this.value)">${it.note||''}</textarea>
+        <div class="photo-upload-area">
+          <label class="tc-photo-btn" for="tc-ph-${key}">📷 Add Photo</label>
+          <input type="file" id="tc-ph-${key}" accept="image/*" style="display:none" onchange="addPhoto('${key}',this)">
+          <div id="tc-pv-${key}">${photos}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function tcTogSec(si) {
+  document.getElementById('tc-sb-'+si).classList.toggle('collapsed');
+  document.getElementById('tc-cb-'+si).classList.toggle('collapsed');
+}
+
+function tcSetS(key, status) {
+  if (!S.items[key]) tcS.items[key]={status:null,note:'',photos:[]};
+  tcS.items[key].status=status;
+  const el=document.getElementById('tc-ci-'+key);
+  el.className='checklist-item'+(status==='pass'?' passed':status==='fail'?' failed':status==='corrected'?' corrected':'');
+  ['pass','fail','corr','na'].forEach(s=>el.querySelector('.status-btn.'+s)?.classList.toggle('active',
+    (s==='corr'?'corrected':s)===status));
+  const def=document.getElementById('tc-def-'+key);
+  if(def) {
+    def.className='item-deficiency'+((status==='fail'||status==='corrected')?' visible':'');
+    const ta=def.querySelector('textarea');
+    if(ta) ta.placeholder = status==='corrected'?'Describe what was corrected...':'Describe the deficiency...';
+  }
+  tcRefreshStats(); tcRefreshDot(parseInt(key.split('-')[0]));
+}
+
+function tcSaveNote(key,val) { if(!S.items[key]) tcS.items[key]={status:null,note:'',photos:[]}; tcS.items[key].note=val; }
+
+function tcAddPhoto(key,input) {
+  const file=input.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=e=>{
+    if(!S.items[key]) tcS.items[key]={status:null,note:'',photos:[]};
+    if(!S.items[key].photos) tcS.items[key].photos=[];
+    const idx=S.items[key].photos.length;
+    tcS.items[key].photos.push(e.target.result);
+    const pv=document.getElementById('tc-pv-'+key);
+    const img=document.createElement('img');
+    img.className='photo-thumb'; img.src=e.target.result; img.title='Click to remove';
+    img.onclick=()=>rmPhoto(key,idx); pv.appendChild(img); input.value='';
+  };
+  r.readAsDataURL(file);
+}
+
+function tcRmPhoto(key,idx) {
+  if(!S.items[key]?.photos) return;
+  tcS.items[key].photos.splice(idx,1);
+  const pv=document.getElementById('tc-pv-'+key);
+  if(pv) pv.innerHTML=S.items[key].photos.map((p,pi)=>`<img class="tc-photo-thumb" src="${p}" title="Click to remove" onclick="tcRmPhoto('${key}',${pi})">`).join('');
+}
+
+function tcGetStats() {
+  const cl=tcGetCL(); let total=0,passed=0,failed=0,corrected=0,na=0;
+  cl.forEach((sec,si)=>sec.items.forEach((_,ii)=>{
+    total++;
+    const s=S.items[`${si}-${ii}`]?.status;
+    if(s==='pass') passed++; else if(s==='fail') failed++; else if(s==='corrected') corrected++; else if(s==='na') na++;
+  }));
+  return {total,passed,failed,corrected,na,checked:passed+failed+corrected+na};
+}
+
+function tcSecStats(si) {
+  const items=tcGetCL()[si]?.items||[]; let checked=0,failed=0,corrected=0;
+  items.forEach((_,ii)=>{
+    const s=S.items[`${si}-${ii}`]?.status;
+    if(s) checked++;
+    if(s==='fail') failed++;
+    if(s==='corrected') corrected++;
+  });
+  return {checked,failed,corrected,total:items.length};
+}
+
+function tcRefreshStats() {
+  const st=tcGetStats(), pct=st.total?Math.round(st.checked/st.total*100):0;
+  const pb=document.getElementById('tc-pgBar'); if(pb) pb.style.width=pct+'%';
+  const ep=document.getElementById('tc-spPass'), ef=document.getElementById('tc-spFail');
+  const ec=document.getElementById('tc-spCorr'), en=document.getElementById('tc-spNA');
+  if(ep) ep.textContent=st.passed; if(ef) ef.textContent=st.failed;
+  if(ec) ec.textContent=st.corrected; if(en) en.textContent=st.na;
+}
+
+function tcRefreshDot(si) {
+  const ss=tcSecStats(si), dot=document.getElementById('tc-dot-'+si), prog=document.getElementById('tc-sp-'+si);
+  if(!dot) return;
+  dot.className='section-status-dot'+(ss.failed>0?' has-fails':(ss.corrected>0&&ss.failed===0&&ss.checked===ss.total)?' partial':ss.checked===ss.total?' complete':ss.checked>0?' partial':'');
+  if(prog) prog.textContent=`${ss.checked}/${ss.total}`;
+}
+
+function tcGoReview() {
+  const st=tcGetStats(), rem=st.total-st.checked;
+  if(rem>0 && !confirm(`${rem} item(s) not yet marked. Submit anyway?`)) return;
+  tcNextStep();
+}
+
+// ── Step 4: Review ────────────────────────────────
+function tcStep4() {
+  const u=tcGetUnit(), st=tcGetStats(), {failed:defs, corrected:corrs}=tcGetDefs();
+  const hasDefs=defs.length>0, hasCorrs=corrs.length>0;
+  const configured = true; // EmailJS keys are set in portal
+  return `
+    <div class="page-title">Review & Submit</div>
+    <div class="page-subtitle">Confirm before sending to Quapawfiredepartment@gmail.com</div>
+    ${!configured?`<div class="config-warn">⚠ EmailJS not configured yet. Check will save to history but email will not send until you add your keys.</div>`:''}
+    <div class="tc-section-card" style="margin-bottom:14px;"><div style="padding:18px 20px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px;">
+        <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Unit</span><strong>${u.name}</strong></div>
+        <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Type</span>${TC_TYPE_LABEL[u.type]}</div>
+        <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Date / Time</span>${tcS.info.date} at ${tcS.info.time}</div>
+        <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Performed By</span><strong>${tcS.info.performer}</strong></div>
+        ${tcS.info.mileage?`<div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Odo / Hours</span>${tcS.info.mileage}</div>`:''}
+        ${tcS.info.notes?`<div style="grid-column:1/-1;"><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Notes</span>${tcS.info.notes}</div>`:''}
+      </div>
+    </div></div>
+    <div class="tc-summary-stats">
+      <div class="tc-stat-card"><div class="tc-stat-value">${st.total}</div><div class="tc-stat-label">Total</div></div>
+      <div class="tc-stat-card pass"><div class="tc-stat-value">${st.passed}</div><div class="tc-stat-label">Pass</div></div>
+      <div class="tc-stat-card fail"><div class="tc-stat-value">${st.failed}</div><div class="tc-stat-label">Fail</div></div>
+      <div class="tc-stat-card corr"><div class="tc-stat-value">${st.corrected}</div><div class="tc-stat-label">Corr</div></div>
+      <div class="tc-stat-card na"><div class="tc-stat-value">${st.na}</div><div class="tc-stat-label">N/A</div></div>
+    </div>
+    <div class="tc-status-banner ${hasDefs?'has-deficiencies':'all-clear'}">
+      ${hasDefs
+        ? `⚠ ${defs.length} outstanding deficiency(ies) — require follow-up.`
+        : hasCorrs
+          ? `✓ No outstanding deficiencies — ${corrs.length} item(s) corrected during this check.`
+          : `✓ All checked items passed — ${u.name} is good to go.`}
+    </div>
+    ${hasDefs?`
+      <div style="margin-bottom:20px;">
+        <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:#f87171;margin-bottom:8px;">Outstanding Deficiencies</div>
+        ${defs.map(d=>`
+          <div class="tc-deficiency-entry">
+            <div class="tc-deficiency-section">${d.section}</div>
+            <div class="tc-deficiency-item-name">${d.item}</div>
+            ${d.note?`<div class="tc-deficiency-item-note">${d.note}</div>`:''}
+            ${d.photos?.length?`<div style="margin-top:6px;display:flex;gap:4px;">${d.photos.map(p=>`<img src="${p}" style="width:42px;height:42px;object-fit:cover;border-radius:3px;border:1px solid var(--border);">`).join('')}</div>`:''}
+          </div>`).join('')}
+      </div>` : ''}
+    ${hasCorrs?`
+      <div style="margin-bottom:20px;">
+        <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--amber);margin-bottom:8px;">Corrected During This Check</div>
+        ${corrs.map(d=>`
+          <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:var(--radius);padding:11px 15px;margin-bottom:8px;">
+            <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--amber);margin-bottom:2px;">${d.section}</div>
+            <div style="font-size:14px;color:var(--text);">${d.item}</div>
+            ${d.note?`<div style="font-size:12px;color:var(--text-muted);margin-top:3px;font-style:italic;">${d.note}</div>`:''}
+          </div>`).join('')}
+      </div>` : ''}
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="tcPrevStep()">← Back</button>
+      <button class="btn btn-success" onclick="tcSubmitCheck()">✓ Submit Report</button>
+    </div>`;
+}
+
+function tcGetDefs() {
+  const cl=tcGetCL(), failed=[], corrected=[];
+  cl.forEach((sec,si)=>sec.items.forEach((item,ii)=>{
+    const key=`${si}-${ii}`, it=S.items[key];
+    if(it?.status==='fail')      failed.push({section:sec.title,item,note:it.note||'',photos:it.photos||[]});
+    if(it?.status==='corrected') corrected.push({section:sec.title,item,note:it.note||'',photos:it.photos||[]});
+  }));
+  return {failed, corrected};
+}
+
+// ════════════════════════════════════════════════════
+// NAV
+// ════════════════════════════════════════════════════
+function tcNextStep() { if(tcS.step<4){tcS.step++;tcRenderStep();} }
+function tcPrevStep() { if(tcS.step>1){tcS.step--;tcRenderStep();} }
+
+// ════════════════════════════════════════════════════
+// SUBMIT
+// ════════════════════════════════════════════════════
+async function tcSubmitCheck() {
+  const u=tcGetUnit(), st=tcGetStats(), {failed:defs, corrected:corrs}=tcGetDefs(), cl=tcGetCL();
+
+  const line = s => s+'\n';
+  const ruler = c => c.repeat(52)+'\n';
+  let r='';
+  r+=line('QUAPAW FIRE DEPARTMENT');
+  r+=line('APPARATUS CHECK REPORT');
+  r+=ruler('═');
+  r+=line(`Unit:         ${u.name}`);
+  r+=line(`Type:         ${TC_TYPE_LABEL[u.type]}`);
+  r+=line(`Date / Time:  ${tcS.info.date} at ${tcS.info.time}`);
+  r+=line(`Performed By: ${tcS.info.performer}`);
+  if(tcS.info.mileage) r+=line(`Odo / Hours:  ${tcS.info.mileage}`);
+  if(tcS.info.notes)   r+=line(`Notes:        ${tcS.info.notes}`);
+  r+='\n';
+  r+=line(`RESULTS: ${st.passed} PASS  |  ${st.failed} FAIL  |  ${st.corrected} CORR  |  ${st.na} N/A`);
+  r+=defs.length>0 ? line(`STATUS:  ⚠ ${defs.length} OUTSTANDING DEFICIENCY(IES) — FOLLOW-UP REQUIRED`) : line('STATUS:  ✓ ALL CLEAR');
+  if(defs.length>0) {
+    r+='\n'+ruler('─');
+    r+=line('OUTSTANDING DEFICIENCIES');
+    r+=ruler('─');
+    defs.forEach((d,i)=>{
+      r+=line(`\n${i+1}. [${d.section}]`);
+      r+=line(`   ${d.item}`);
+      if(d.note) r+=line(`   Note: ${d.note}`);
+      if(d.photos?.length) r+=line(`   Photos: ${d.photos.length} attached`);
+    });
+  }
+  if(corrs.length>0) {
+    r+='\n'+ruler('─');
+    r+=line('CORRECTED DURING THIS CHECK');
+    r+=ruler('─');
+    corrs.forEach((d,i)=>{
+      r+=line(`\n${i+1}. [${d.section}]`);
+      r+=line(`   ${d.item}`);
+      if(d.note) r+=line(`   Correction: ${d.note}`);
+    });
+  }
+  r+='\n'+ruler('─');
+  r+=line('FULL CHECKLIST');
+  r+=ruler('─');
+  cl.forEach((sec,si)=>{
+    r+='\n'+line(sec.title.toUpperCase());
+    sec.items.forEach((item,ii)=>{
+      const key=`${si}-${ii}`, s=(tcS.items[key]?.status||'unchecked').toUpperCase().padEnd(9);
+      r+=line(`  [${s}] ${item}`);
+      if(tcS.items[key]?.note) r+=line(`             → ${tcS.items[key].note}`);
+    });
+  });
+  r+='\n'+ruler('═');
+  r+=line('Generated by QFD Apparatus Check System — quapawfire.com');
+
+  const payload={
+    id:Date.now().toString(), timestamp:new Date().toISOString(),
+    unit_id:S.unitId, unit_name:u.name, unit_type:u.type,
+    date:S.info.date, time:S.info.time, performer:S.info.performer,
+    mileage:S.info.mileage, notes:S.info.notes, stats:st,
+    deficiencies:[...defs, ...corrs.map(c=>({...c, corrected:true}))],
+    checklist:cl.map((sec,si)=>({title:sec.title,items:sec.items.map((item,ii)=>{
+      const key=`${si}-${ii}`;
+      return {item,status:S.items[key]?.status||'unchecked',note:S.items[key]?.note||'',photos:S.items[key]?.photos||[]};
+    })}))
+  };
+  await tcSaveToHistory(payload);
+
+  if(EMAILJS_PUBLIC_KEY==='YOUR_PUBLIC_KEY') {
+    toast('Saved to history. Add EmailJS keys to enable email.','error');
+    setTimeout(resetApp,2200); return;
+  }
+
+  document.getElementById('tcLoadingOverlay').classList.add('visible');
+  const subj=`[QFD Check] ${u.name} — ${tcS.info.date} — ${defs.length>0?'⚠ '+defs.length+' DEFICIENCY':corrs.length>0?'✓ CLEAR / '+corrs.length+' CORRECTED':'✓ ALL CLEAR'}`;
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {subject:subj, to_email:'Quapawfiredepartment@gmail.com', report:r});
+    document.getElementById('tcLoadingOverlay').classList.remove('visible');
+    toast('✓ Report sent to Quapawfiredepartment@gmail.com','success');
+    setTimeout(resetApp,2000);
+  } catch(err) {
+    document.getElementById('tcLoadingOverlay').classList.remove('visible');
+    toast('Email failed: '+(err?.text||err?.message||'Unknown error')+' — Check saved to history.','error');
+    setTimeout(resetApp,3000);
+  }
+}
+
+function tcResetApp() {
+  S={step:1,unitId:null,info:{date:'',time:'',performer:'',mileage:'',notes:''},items:{}};
+  tcRenderStep();
+}
+
+// ════════════════════════════════════════════════════
+// HISTORY — shared via Supabase
+// ════════════════════════════════════════════════════
+let _historyCache = []; // used by viewDetail
+
+async function tcSaveToHistory(p) {
+  // Always save to localStorage as offline backup
+  try {
+    const local = JSON.parse(localStorage.getItem('qfd_history')||'[]');
+    local.unshift(p); localStorage.setItem('qfd_history', JSON.stringify(local.slice(0,50)));
+  } catch(e) {}
+  // Save to Supabase for shared visibility
+  const { error } = await db.from('apparatus_checks').insert([{
+    id:           p.id,
+    unit_id:      p.unit_id,
+    unit_name:    p.unit_name,
+    unit_type:    p.unit_type,
+    date:         p.date,
+    time:         p.time,
+    performer:    p.performer,
+    mileage:      p.mileage || '',
+    notes:        p.notes   || '',
+    stats:        p.stats,
+    deficiencies: p.deficiencies,
+    checklist:    p.checklist
+  }]);
+  if (error) console.warn('Supabase save error:', error.message);
+}
+
+async function tcRenderHistory() {
+  const c = document.getElementById('tc-history-content');
+  c.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text-muted);">
+    <div class="spinner" style="margin:0 auto 14px;"></div>Loading shared history...
+  </div>`;
+
+  const { data, error } = await db
+    .from('apparatus_checks')
+    .select('id,unit_name,unit_type,date,time,performer,mileage,stats,deficiencies,notes')
+    .order('date', { ascending: false })
+    .order('time', { ascending: false })
+    .limit(200);
+
+  if (error) {
+    // Fall back to localStorage if Supabase unreachable
+    const local = JSON.parse(localStorage.getItem('qfd_history')||'[]');
+    _historyCache = local;
+    tcRenderHistoryTable(local, true);
+    return;
+  }
+
+  _historyCache = data || [];
+  tcRenderHistoryTable(_historyCache, false);
+}
+
+function tcRenderHistoryTable(h, isOffline) {
+  const c = document.getElementById('tc-history-content');
+  if (!h.length) {
+    c.innerHTML = `<div class="empty-state"><div style="font-size:48px;margin-bottom:14px;">📋</div>
+      <div style="font-family:'Oswald',sans-serif;font-size:20px;font-weight:600;text-transform:uppercase;margin-bottom:6px;">No Check History</div>
+      <p style="font-size:14px;">Completed checks appear here.</p></div>`;
+    return;
+  }
+  const offlineBanner = isOffline
+    ? `<div style="background:rgba(245,158,11,.1);border:1px solid var(--amber);border-radius:var(--radius);padding:9px 14px;font-size:13px;color:var(--amber);margin-bottom:12px;">⚠ Showing device-local history — could not reach shared database.</div>`
+    : '';
+  c.innerHTML = offlineBanner + `
+    <div class="tc-section-card">
+      <table class="tc-history-table">
+        <thead><tr><th>Date</th><th>Unit</th><th>Performed By</th><th>Result</th><th></th></tr></thead>
+        <tbody>${h.map(x => `
+          <tr>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">${x.date}<br><span style="color:var(--text-muted)">${x.time}</span></td>
+            <td><strong>${x.unit_name||x.unitName}</strong><br><span style="font-size:11px;color:var(--text-muted);">${TC_TYPE_LABEL[x.unit_type||x.type]||''}</span></td>
+            <td>${x.performer}</td>
+            <td>${x.stats?.failed>0
+              ? `<span class="badge badge-fail">⚠ ${x.stats.failed} FAIL</span>`
+              : x.stats?.corrected>0
+                ? `<span class="badge" style="background:rgba(245,158,11,.2);color:var(--amber);">✓ ${x.stats.corrected} CORR</span>`
+                : `<span class="badge badge-pass">✓ CLEAR</span>`}</td>
+            <td><button class="link-btn" onclick="tcViewDetail('${x.id}')">View</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+async function tcViewDetail(id) {
+  // Try cache first, then fetch full record from Supabase if needed
+  let h = _historyCache.find(x => x.id === id);
+  if (!h || !h.checklist) {
+    const { data } = await db.from('apparatus_checks').select('*').eq('id', id).single();
+    if (data) h = data;
+  }
+  if (!h) return;
+
+  const defs = h.deficiencies || [];
+  const unitName = h.unit_name || h.unitName || '';
+  document.getElementById('tcModalTitle').textContent = `${unitName} — ${h.date}`;
+  document.getElementById('tcModalBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;font-size:14px;">
+      <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;">Unit</span><strong>${unitName}</strong></div>
+      <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;">Performed By</span>${h.performer}</div>
+      <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;">Date / Time</span>${h.date} at ${h.time}</div>
+      ${h.mileage?`<div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;">Odo / Hours</span>${h.mileage}</div>`:''}
+      ${h.notes?`<div style="grid-column:1/-1;"><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;">Notes</span>${h.notes}</div>`:''}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px;">
+      ${['total','passed','failed','corrected','na'].map(k=>`
+        <div style="background:var(--bg);border:1px solid var(--border);border-radius:4px;padding:10px;text-align:center;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:${k==='passed'?'#4ade80':k==='failed'?'#f87171':k==='corrected'?'var(--amber)':'var(--text)'};">${h.stats?.[k]||0}</div>
+          <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);">${k==='corrected'?'corr':k}</div>
+        </div>`).join('')}
+    </div>
+    ${defs.filter(d=>!d.corrected).length>0 ? `
+      <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:#f87171;margin-bottom:8px;">Outstanding Deficiencies</div>
+      ${defs.filter(d=>!d.corrected).map(d=>`
+        <div class="tc-deficiency-entry">
+          <div class="tc-deficiency-section">${d.section}</div>
+          <div class="tc-deficiency-item-name">${d.item}</div>
+          ${d.note?`<div class="tc-deficiency-item-note">${d.note}</div>`:''}
+          ${d.photos?.length?`<div style="margin-top:6px;display:flex;gap:4px;">${d.photos.map(p=>`<img src="${p}" style="width:48px;height:48px;object-fit:cover;border-radius:3px;border:1px solid var(--border);">`).join('')}</div>`:''}
+        </div>`).join('')}` : ''}
+    ${defs.filter(d=>d.corrected).length>0 ? `
+      <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--amber);margin-top:12px;margin-bottom:8px;">Corrected During This Check</div>
+      ${defs.filter(d=>d.corrected).map(d=>`
+        <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:var(--radius);padding:11px 15px;margin-bottom:8px;">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--amber);margin-bottom:2px;">${d.section}</div>
+          <div style="font-size:14px;color:var(--text);">${d.item}</div>
+          ${d.note?`<div style="font-size:12px;color:var(--text-muted);margin-top:3px;font-style:italic;">${d.note}</div>`:''}
+        </div>`).join('')}` : ''}
+    ${defs.length===0 ? `<div style="text-align:center;color:var(--text-muted);padding:16px;font-size:14px;">✓ No deficiencies on this check.</div>` : ''}`;
+  document.getElementById('tcModal').classList.add('visible');
+}
+
+function tcCloseModal() { document.getElementById('tcModal').classList.remove('visible'); }
+
+// ════════════════════════════════════════════════════
+// TOAST
+// ════════════════════════════════════════════════════
+function toast(msg, type='success') {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.className=`toast ${type} visible`;
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('visible'),5000);
+}
+
+// ════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════
+// TRUCK CHECK — TAB SWITCH & INIT
+// ════════════════════════════════════════════════════
+function tcTabSwitch(tab, btn) {
+  document.getElementById('tc-pane-new').style.display     = (tab==='new')     ? '' : 'none';
+  document.getElementById('tc-pane-history').style.display = (tab==='history') ? '' : 'none';
+  document.querySelectorAll('#view-truck .tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  if (tab==='history') tcRenderHistory();
+}
+
+function tcInit() {
+  tcS = {step:1, unitId:null, info:{date:'',time:'',performer:'',mileage:'',notes:''}, items:{}};
+  tcTabSwitch('new', document.getElementById('tc-tabnew'));
+  tcRenderStep();
+}
+
 </script>
+
+<!-- ══ TRUCK CHECKS ══════════════════════════════════ -->
+<div class="view" id="view-truck">
+  <div class="inner-header">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <span class="inner-divider">/</span>
+    <span class="inner-title">Truck Checks</span>
+  </div>
+  <div class="module-content">
+    <div class="tab-nav" style="margin-bottom:24px;">
+      <button class="tab-btn active" id="tc-tabnew" onclick="tcTabSwitch('new',this)">▶ New Check</button>
+      <button class="tab-btn" id="tc-tabhist" onclick="tcTabSwitch('history',this)">📋 History</button>
+    </div>
+    <!-- New Check pane -->
+    <div id="tc-pane-new">
+      <div class="tc-step-indicator" id="tcStepIndicator">
+        <div class="tc-step" id="tcStepEl-1"><div class="tc-step-num">1</div><div class="tc-step-label">Unit</div></div>
+        <div class="tc-step-line"></div>
+        <div class="tc-step" id="tcStepEl-2"><div class="tc-step-num">2</div><div class="tc-step-label">Details</div></div>
+        <div class="tc-step-line"></div>
+        <div class="tc-step" id="tcStepEl-3"><div class="tc-step-num">3</div><div class="tc-step-label">Checklist</div></div>
+        <div class="tc-step-line"></div>
+        <div class="tc-step" id="tcStepEl-4"><div class="tc-step-num">4</div><div class="tc-step-label">Review</div></div>
+      </div>
+      <div id="tc-step-content"></div>
+    </div>
+    <!-- History pane -->
+    <div id="tc-pane-history" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+        <div>
+          <div class="page-title">Check History</div>
+          <div class="page-sub" style="margin:0;">Shared across all devices</div>
+        </div>
+        <button class="card-action" style="font-size:13px;" onclick="tcRenderHistory()">↻ Refresh</button>
+      </div>
+      <div id="tc-history-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Truck Check detail modal -->
+<div class="modal-overlay" id="tcModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="tcModalTitle">Check Details</div>
+      <button class="modal-close" onclick="tcCloseModal()">✕</button>
+    </div>
+    <div class="modal-body" id="tcModalBody"></div>
+  </div>
+</div>
+
+<!-- Truck Check submit loading overlay -->
+<div class="loading-overlay" id="tcLoadingOverlay">
+  <div class="loader">
+    <div class="spinner"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;letter-spacing:2px;text-transform:uppercase;">Submitting Report</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Saving and sending email...</div>
+  </div>
+</div>
 </body>
 </html>
