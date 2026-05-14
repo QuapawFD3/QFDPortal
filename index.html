@@ -647,6 +647,12 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
           <div class="module-name">Member Roster</div>
           <div class="module-desc">Contact directory, 26 active members</div>
         </div>
+        <div class="module-card" style="--module-color:#8b5cf6" onclick="openModule('recruit')">
+          <span class="module-badge badge-live">LIVE</span>
+          <span class="module-icon">📗</span>
+          <div class="module-name">New Recruit</div>
+          <div class="module-desc">Green Book skill sign-off tracker</div>
+        </div>
         <div class="module-card" style="--module-color:#f59e0b" onclick="cs('training')">
           <span class="module-badge badge-soon">SOON</span>
           <span class="module-icon">📚</span>
@@ -1398,7 +1404,7 @@ function cs(key){
 }
 async function openModule(mod){
   // Check auth for gated modules
-  const gated = ['hose','scba','hydrant','roster','truck'];
+  const gated = ['hose','scba','hydrant','roster','truck','recruit'];
   if(gated.includes(mod)){
     const { data:{ session } } = await sb.auth.getSession();
     if(!session){ goHome(); setAuthState(false, null); return; }
@@ -1417,6 +1423,7 @@ async function openModule(mod){
   if(mod==='scba'){showView('scba');initScbaModule();return;}
   if(mod==='hose'){showView('hose');initHoseModule();return;}
   if(mod==='truck'){showView('truck');tcInit();return;}
+  if(mod==='recruit'){showView('recruit');recInit();return;}
 }
 
 // ═══════════════════════════════════════════════
@@ -3568,6 +3575,373 @@ function openHydTestFor(label){
     if(sel.options[i].value===label){ sel.selectedIndex=i; break; }
   }
 }
+// ═══════════════════════════════════════════════════════════
+// NEW RECRUIT — GREEN BOOK SIGN-OFF MODULE
+// ═══════════════════════════════════════════════════════════
+
+const GREEN_BOOK = [
+  {section:'Orientation', items:[
+    'Received and reviewed department SOGs',
+    'Station tour completed',
+    'Introduction to all apparatus',
+    'Reviewed chain of command',
+    'Issued PPE and equipment',
+    'OSHA / safety orientation completed',
+  ]},
+  {section:'Protective Equipment', items:[
+    'Can properly don and doff full structural PPE',
+    'Can properly don and doff wildland PPE',
+    'Understands PASS device operation',
+    'Can inspect PPE for serviceability',
+    'Knows PPE storage locations on all apparatus',
+  ]},
+  {section:'SCBA', items:[
+    'Can properly don and doff SCBA',
+    'Can perform SCBA pre-use inspection',
+    'Can change SCBA cylinder',
+    'Can operate in SCBA (confidence course)',
+    'Understands low-air alarm procedures',
+    'Can perform emergency bypass operation',
+    'Understands SCBA cascade/refill station (Rescue 11)',
+  ]},
+  {section:'Radio & Communications', items:[
+    'Can operate portable radio',
+    'Knows channel assignments',
+    'Can relay a clear radio report',
+    'Understands Mayday communications protocol',
+    'Knows mutual aid radio procedures',
+  ]},
+  {section:'Apparatus Familiarization', items:[
+    'Can identify all QFD apparatus by name and number',
+    'Knows location of all equipment on Engine 21',
+    'Knows location of all equipment on Engine 22',
+    'Knows location of all equipment on Rescue 23',
+    'Knows location of all equipment on Rescue 11 (Medium Rescue)',
+    'Knows location of all equipment on Tanker 2',
+    'Knows location of all equipment on Tanker 25',
+    'Knows location of all equipment on Brush trucks',
+    'Can perform apparatus check on at least two units',
+  ]},
+  {section:'Pump Operations', items:[
+    'Can engage pump and establish water supply',
+    'Understands tank-to-pump operation',
+    'Can operate discharge valves and set pressures',
+    'Can draft from portable tank',
+    'Understands foam system operation (if equipped)',
+    'Can perform pump shutdown procedure',
+  ]},
+  {section:'Hose & Nozzle Operations', items:[
+    'Can deploy and advance 1¾" preconnect',
+    'Can deploy and advance 2½" preconnect',
+    'Can deploy bumper line',
+    'Can demonstrate triple-layer preconnect load',
+    'Can operate smoothbore and fog nozzles',
+    'Can perform hose team operations as nozzleman',
+    'Can perform hose team operations as backup',
+    'Can perform hose team operations as officer',
+  ]},
+  {section:'Ladders', items:[
+    'Can identify all ground ladders on apparatus',
+    'Can carry and raise 24' extension ladder (2-person)',
+    'Can carry and raise roof ladder',
+    'Can perform ladder placement for ventilation',
+    'Can perform ladder placement for rescue',
+    'Understands ladder safety rules',
+  ]},
+  {section:'Firefighter Survival', items:[
+    'Can demonstrate Mayday radio call',
+    'Can complete SCBA confidence course',
+    'Can perform emergency egress from structure',
+    'Understands LUNAR acronym',
+    'Can demonstrate self-rescue techniques',
+    'Can demonstrate rescue breathing',
+  ]},
+  {section:'Search & Rescue', items:[
+    'Can complete primary search without hoseline',
+    'Can complete primary search with hoseline',
+    'Can demonstrate V.E.S. operation',
+    'Can demonstrate victim drag techniques',
+    'Can remove victim through doorway',
+    'Can remove victim through window',
+    'Can remove victim via ground ladder',
+  ]},
+  {section:'R.I.T. (Rapid Intervention Team)', items:[
+    'Can explain RIT roles and responsibilities',
+    'Can identify and deploy RIT tools',
+    'Can demonstrate Pak Tracker use',
+    'Can demonstrate RIT pack deployment',
+    'Can demonstrate firefighter removal techniques',
+    'Can perform toxic bottle swap',
+  ]},
+];
+
+const REC_TOTAL = GREEN_BOOK.reduce((s, sec) => s + sec.items.length, 0);
+
+// Officers authorised to sign off recruit skills
+const REC_OFFICERS = new Set([
+  'will.langley@quapawfire.com',
+  'cory.humble@quapawfire.com',
+  'jason.garrison@quapawfire.com',
+  'casey.abernathy@quapawfire.com',
+  'trevor.brown@quapawfire.com',
+  'matt.abernathy@quapawfire.com',
+]);
+
+const REC = {
+  loggedInEmail: '',
+  isOfficer: false,
+  selectedRecruit: null,
+  signoffs: {},
+  collapsed: {},
+  activeTab: 'progress',
+};
+
+function recSwitchTab(tab, btn) {
+  document.querySelectorAll('#view-recruit .tab-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  REC.activeTab = tab;
+  document.getElementById('recProgressContent').style.display = tab === 'progress' ? '' : 'none';
+  document.getElementById('recAllContent').style.display     = tab === 'all'      ? '' : 'none';
+  if (tab === 'all') recRenderAll();
+}
+
+async function recInit() {
+  const { data:{ session } } = await sb.auth.getSession();
+  REC.loggedInEmail = session?.user?.email || '';
+  REC.isOfficer = REC_OFFICERS.has(REC.loggedInEmail.toLowerCase());
+
+  // Hide All Recruits tab for non-officers
+  const allTab = document.getElementById('recTabAll');
+  if (allTab) allTab.style.display = REC.isOfficer ? '' : 'none';
+
+  // Auto-match logged-in email to roster name
+  const derived = REC.loggedInEmail.split('@')[0].replace(/\./g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+  const matched = ROSTER.find(m => m.name.toLowerCase() === derived.toLowerCase());
+  REC.selectedRecruit = matched ? matched.name : null;
+  REC.signoffs = {};
+  REC.collapsed = {};
+  if (REC.selectedRecruit) await recLoadSignoffs(REC.selectedRecruit);
+  recSwitchTab('progress', document.getElementById('recTabProgress'));
+  recRenderProgress();
+}
+
+async function recLoadSignoffs(recruitName) {
+  REC.signoffs = {};
+  try {
+    const { data } = await sb.from('recruit_signoffs').select('*').eq('recruit_name', recruitName);
+    if (data) data.forEach(row => {
+      REC.signoffs[row.item_key] = { passed: row.passed, signedBy: row.signed_by, date: row.sign_date };
+    });
+  } catch(e) { console.warn('recLoadSignoffs:', e); }
+}
+
+function recRenderProgress() {
+  const c = document.getElementById('recProgressContent');
+
+  // Non-officers who don't match any roster name get a plain message
+  if (!REC.selectedRecruit) {
+    if (!REC.isOfficer) {
+      c.innerHTML = `
+        <div class="page-title" style="margin-bottom:6px;">New Recruit Training</div>
+        <div style="font-size:14px;color:var(--text-muted);margin-top:8px;">
+          Your account is not linked to a recruit record. Contact an officer to get set up.
+        </div>`;
+      return;
+    }
+    // Officer — show recruit selector
+    c.innerHTML = `
+      <div class="page-title" style="margin-bottom:6px;">New Recruit Training</div>
+      <div style="font-size:14px;color:var(--text-muted);margin-bottom:24px;">Select a recruit to view or sign off their Green Book.</div>
+      <div class="card"><div style="padding:20px;">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:10px;">Select Recruit</div>
+        <select id="recSelect" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;padding:10px 14px;">
+          <option value="">— Choose a name —</option>
+          ${ROSTER.map(m => `<option value="${m.name}">${m.name}</option>`).join('')}
+        </select>
+        <button class="btn btn-primary" style="margin-top:12px;" onclick="recSelectRecruit()">Open Green Book →</button>
+      </div></div>`;
+    return;
+  }
+
+  const completed = Object.values(REC.signoffs).filter(s => s.passed).length;
+  const pct = Math.round(completed / REC_TOTAL * 100);
+
+  let html = `
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+      <div>
+        <div class="page-title" style="margin-bottom:2px;">${REC.selectedRecruit}</div>
+        <div style="font-size:13px;color:var(--text-muted);">Green Book · ${completed} of ${REC_TOTAL} skills complete</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:${pct===100?'#4ade80':'var(--red)'};">${pct}%</span>
+        ${REC.isOfficer ? `<button class="btn btn-secondary" style="font-size:12px;padding:7px 14px;" onclick="recChangeRecruit()">Change Recruit</button>` : ''}
+      </div>
+    </div>
+    <div style="background:var(--surface2);border-radius:4px;height:6px;margin-bottom:28px;overflow:hidden;">
+      <div style="height:100%;border-radius:4px;background:${pct===100?'var(--green)':'var(--red)'};width:${pct}%;transition:width .4s;"></div>
+    </div>`;
+
+  GREEN_BOOK.forEach((sec, si) => {
+    const secDone = sec.items.filter((_,ii) => REC.signoffs[`${si}-${ii}`]?.passed).length;
+    const collapsed = REC.collapsed[si];
+    const dotColor = secDone === sec.items.length ? 'var(--green)' : secDone > 0 ? 'var(--amber)' : 'var(--border)';
+
+    html += `
+    <div class="card" style="margin-bottom:12px;">
+      <div class="card-header" style="cursor:pointer;" onclick="recToggleSec(${si})">
+        <div class="card-title" style="display:flex;align-items:center;gap:10px;">
+          <span style="width:9px;height:9px;border-radius:50%;background:${dotColor};flex-shrink:0;display:inline-block;"></span>
+          ${sec.section}
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);">${secDone}/${sec.items.length}</span>
+          <span style="color:var(--text-muted);font-size:13px;">${collapsed ? '▶' : '▼'}</span>
+        </div>
+      </div>
+      ${collapsed ? '' : `<div style="padding:0 20px 16px;">
+        ${sec.items.map((item, ii) => {
+          const key = `${si}-${ii}`;
+          const so  = REC.signoffs[key];
+          if (so?.passed) {
+            // Signed off — everyone sees this, only officers see Revoke
+            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+                <div>
+                  <div style="font-size:14px;color:var(--text);">${item}</div>
+                  <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">✓ Signed by ${so.signedBy} · ${so.date}</div>
+                </div>
+                ${REC.isOfficer ? `<button onclick="recRevoke('${key}','${REC.selectedRecruit}')" style="background:none;border:1px solid rgba(220,38,38,.3);color:#f87171;font-size:11px;padding:3px 9px;border-radius:4px;cursor:pointer;font-family:'Barlow',sans-serif;white-space:nowrap;margin-left:12px;">Revoke</button>` : ''}
+              </div>`;
+          } else if (REC.isOfficer) {
+            // Not signed off — officers see sign-off input
+            return `<div style="padding:10px 0;border-bottom:1px solid var(--border);">
+                <div style="font-size:14px;color:var(--text);margin-bottom:6px;">${item}</div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <input id="rec-officer-${key}" type="text" placeholder="Officer name / initials" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Barlow',sans-serif;font-size:13px;padding:6px 10px;">
+                  <button onclick="recSignOff('${key}','${REC.selectedRecruit}',${si},'${item.replace(/'/g,"\'")}','${sec.section}')" style="background:var(--green);border:none;color:#fff;font-size:12px;padding:7px 14px;border-radius:4px;cursor:pointer;font-family:'Barlow',sans-serif;font-weight:600;white-space:nowrap;">Sign Off</button>
+                </div>
+              </div>`;
+          } else {
+            // Not signed off — non-officers see read-only pending state
+            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+                <div style="font-size:14px;color:var(--text);">${item}</div>
+                <span style="font-size:11px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;white-space:nowrap;margin-left:12px;">PENDING</span>
+              </div>`;
+          }
+        }).join('')}
+      </div>`}
+    </div>`;
+  });
+
+  c.innerHTML = html;
+}
+function recToggleSec(si) {
+  REC.collapsed[si] = !REC.collapsed[si];
+  recRenderProgress();
+}
+
+function recChangeRecruit() {
+  REC.selectedRecruit = null;
+  REC.signoffs = {};
+  recRenderProgress();
+}
+
+function recSelectRecruit() {
+  const sel = document.getElementById('recSelect');
+  if (!sel?.value) return;
+  recViewRecruit(sel.value);
+}
+
+async function recViewRecruit(name) {
+  REC.selectedRecruit = name;
+  REC.signoffs = {};
+  REC.collapsed = {};
+  await recLoadSignoffs(name);
+  recSwitchTab('progress', document.getElementById('recTabProgress'));
+  recRenderProgress();
+}
+
+async function recSignOff(key, recruitName, si, item, section) {
+  const input = document.getElementById('rec-officer-' + key);
+  const officer = input?.value?.trim();
+  if (!officer) { toast('Enter the officer name or initials first.', 'error'); return; }
+  const today = new Date().toISOString().split('T')[0];
+  try {
+    const { error } = await sb.from('recruit_signoffs').upsert({
+      recruit_name:    recruitName,
+      item_key:        key,
+      section:         section,
+      item:            item,
+      passed:          true,
+      signed_by:       officer,
+      sign_date:       today,
+      logged_by_email: REC.loggedInEmail,
+    }, { onConflict: 'recruit_name,item_key' });
+    if (error) throw error;
+    REC.signoffs[key] = { passed: true, signedBy: officer, date: today };
+    recRenderProgress();
+    toast('✓ Signed off: ' + item.substring(0, 40), 'success');
+  } catch(e) {
+    toast('Save failed: ' + e.message, 'error');
+  }
+}
+
+async function recRevoke(key, recruitName) {
+  if (!confirm('Revoke this sign-off?')) return;
+  try {
+    const { error } = await sb.from('recruit_signoffs')
+      .delete().eq('recruit_name', recruitName).eq('item_key', key);
+    if (error) throw error;
+    delete REC.signoffs[key];
+    recRenderProgress();
+    toast('Sign-off revoked.', 'success');
+  } catch(e) {
+    toast('Revoke failed: ' + e.message, 'error');
+  }
+}
+
+async function recRenderAll() {
+  const c = document.getElementById('recAllContent');
+  c.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text-muted);"><div class="spinner" style="margin:0 auto 14px;"></div>Loading recruit data...</div>`;
+  try {
+    // Get all sign-offs grouped by recruit
+    const { data, error } = await sb.from('recruit_signoffs').select('recruit_name,passed').eq('passed', true);
+    if (error) throw error;
+
+    // Count completions per recruit
+    const counts = {};
+    (data || []).forEach(row => {
+      counts[row.recruit_name] = (counts[row.recruit_name] || 0) + 1;
+    });
+
+    if (!Object.keys(counts).length) {
+      c.innerHTML = `<div style="text-align:center;padding:64px;color:var(--text-muted);">No recruit sign-offs recorded yet.</div>`;
+      return;
+    }
+
+    let html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;">`;
+    Object.entries(counts).sort((a,b) => b[1]-a[1]).forEach(([name, completed]) => {
+      const pct = Math.round(completed / REC_TOTAL * 100);
+      html += `
+        <div class="card" style="cursor:pointer;" onclick="recViewRecruit('${name}')">
+          <div style="padding:18px 20px;">
+            <div style="font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;">${name}</div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="flex:1;background:var(--surface2);border-radius:3px;height:8px;overflow:hidden;">
+                <div style="height:100%;border-radius:3px;background:${pct===100?'var(--green)':'var(--red)'};width:${pct}%;"></div>
+              </div>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:600;color:${pct===100?'#4ade80':'var(--text)'};">${pct}%</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">${completed} of ${REC_TOTAL} skills</div>
+          </div>
+        </div>`;
+    });
+    html += `</div>`;
+    c.innerHTML = html;
+  } catch(e) {
+    c.innerHTML = `<div style="color:var(--red);padding:24px;">Error: ${e.message}</div>`;
+  }
+}
+
 // ════════════════════════════════════════════════════
 // TRUCK CHECK MODULE
 // ════════════════════════════════════════════════════
@@ -4352,6 +4726,23 @@ async function tcInit() {
     <div class="spinner"></div>
     <div style="font-family:'Oswald',sans-serif;font-size:15px;font-weight:600;letter-spacing:2px;text-transform:uppercase;">Submitting Report</div>
     <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Saving and sending email...</div>
+  </div>
+</div>
+
+<!-- ══ NEW RECRUIT (GREEN BOOK) ══════════════════════ -->
+<div class="view" id="view-recruit">
+  <div class="inner-header">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <span class="inner-divider">/</span>
+    <span class="inner-title">New Recruit — Green Book</span>
+  </div>
+  <div class="module-content">
+    <div class="tab-nav" style="margin-bottom:24px;">
+      <button class="tab-btn active" id="recTabProgress" onclick="recSwitchTab('progress',this)">📗 My Progress</button>
+      <button class="tab-btn" id="recTabAll" onclick="recSwitchTab('all',this)">👥 All Recruits</button>
+    </div>
+    <div id="recProgressContent"></div>
+    <div id="recAllContent" style="display:none;"></div>
   </div>
 </div>
 </body>
