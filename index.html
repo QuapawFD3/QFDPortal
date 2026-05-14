@@ -417,6 +417,23 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
 .loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:none;align-items:center;justify-content:center;z-index:500;}
 .loading-overlay.visible{display:flex;}
 .loader{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:32px 48px;text-align:center;}
+/* truck check form fields */
+.form-group{margin-bottom:18px;}
+.form-label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--text-muted);margin-bottom:5px;}
+.form-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;padding:10px 14px;transition:border-color .15s;-webkit-appearance:none;}
+.form-input:focus{outline:none;border-color:var(--red);}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.required-mark{color:var(--red);}
+.nav-buttons{display:flex;justify-content:space-between;align-items:center;margin-top:32px;padding-top:24px;border-top:1px solid var(--border);}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border:none;border-radius:var(--radius);font-family:'Barlow',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;}
+.btn-primary{background:var(--red);color:#fff;}
+.btn-primary:hover{background:#b91c1c;}
+.btn-primary:disabled{background:var(--surface2);color:var(--text-muted);cursor:not-allowed;}
+.btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.btn-secondary:hover{border-color:var(--text-muted);}
+.btn-success{background:var(--green);color:#fff;}
+.btn-success:hover{background:#15803d;}
+@media(max-width:640px){.form-grid{grid-template-columns:1fr;}}
 
 /* ── TRUCK CHECK MODULE ─────────────────────────── */
 .tc-step-indicator{display:flex;align-items:center;margin-bottom:32px;}
@@ -1384,7 +1401,7 @@ async function openModule(mod){
   const gated = ['hose','scba','hydrant','roster','truck'];
   if(gated.includes(mod)){
     const { data:{ session } } = await sb.auth.getSession();
-    if(!session){ goHome(); document.getElementById('authGate').classList.add('visible'); return; }
+    if(!session){ goHome(); setAuthState(false, null); return; }
   }
   if(mod==='roster'){renderRoster();showView('roster');return;}
   if(mod==='run-log'){showView('run-log');ensureRunsLoaded();return;}
@@ -3629,7 +3646,7 @@ const TC_CHECKLISTS = {
 // STATE
 // ════════════════════════════════════════════════════
 let tcS = {step:1, unitId:null, info:{date:'',time:'',performer:'',mileage:'',notes:''}, items:{}};
-const tcGetUnit = () => TC_UNITS.find(u => u.id === tctcS.unitId);
+const tcGetUnit = () => TC_UNITS.find(u => u.id === tcS.unitId);
 const tcGetCL   = () => { const u = tcGetUnit(); return u ? TC_CHECKLISTS[u.type] : []; };
 
 const TC_TYPE_LABEL = {engine:'Engine / Pumper',tanker:'Tanker / Tender',brush:'Brush / Wildland',rescue:'Heavy Rescue',medrescue:'Medium Rescue + SCBA Cascade'};
@@ -3649,8 +3666,8 @@ function tcOldSwitchView(v, btn) {
 // RENDER STEPS
 // ════════════════════════════════════════════════════
 function tcRenderStep() {
-  updateStepIndicator();
-  const fns = [null, step1, step2, step3, step4];
+  tcUpdateStepIndicator();
+  const fns = [null, tcStep1, tcStep2, tcStep3, tcStep4];
   document.getElementById('tc-step-content').innerHTML = fns[tcS.step]();
   window.scrollTo(0,0);
 }
@@ -3670,7 +3687,7 @@ function tcStep1() {
     <div class="page-subtitle">Choose the apparatus you are checking today.</div>
     <div class="tc-unit-grid">
       ${TC_UNITS.map(u=>`
-        <div class="tc-unit-card ${tctcS.unitId===u.id?'selected':''}" onclick="tcPickUnit('${u.id}')">
+        <div class="tc-unit-card ${tcS.unitId===u.id?'selected':''}" onclick="tcPickUnit('${u.id}')">
           <span class="tc-unit-icon">${u.icon}</span>
           <div class="tc-unit-name">${u.name}</div>
           <div class="tc-unit-type">${TC_TYPE_LABEL[u.type]}</div>
@@ -3683,15 +3700,15 @@ function tcStep1() {
 }
 
 function tcPickUnit(id) {
-  if (tctcS.unitId !== id) { tctcS.unitId=id; tcS.items={}; }
+  if (tcS.unitId !== id) { tcS.unitId=id; tcS.items={}; }
   tcRenderStep();
 }
 
 // ── Step 2: Details ───────────────────────────────
 function tcStep2() {
   const now = new Date();
-  const d = tctcS.info.date || now.toISOString().split('T')[0];
-  const t = tctcS.info.time || now.toTimeString().slice(0,5);
+  const d = tcS.info.date || now.toISOString().split('T')[0];
+  const t = tcS.info.time || now.toTimeString().slice(0,5);
   const u = tcGetUnit();
   return `
     <div class="page-title">Check Details</div>
@@ -3709,15 +3726,15 @@ function tcStep2() {
       </div>
       <div class="form-group">
         <label class="form-label">Performed By <span class="required-mark">*</span></label>
-        <input class="form-input" type="text" id="iPerformer" placeholder="Full name" value="${tctcS.info.performer}" oninput="tcSi()">
+        <input class="form-input" type="text" id="iPerformer" placeholder="Full name" value="${tcS.info.performer}" oninput="tcSi()">
       </div>
       <div class="form-group">
         <label class="form-label">Odometer / Engine Hours</label>
-        <input class="form-input" type="text" id="iMileage" placeholder="e.g. 12,450 mi or 340 hrs" value="${tctcS.info.mileage}" oninput="tcSi()">
+        <input class="form-input" type="text" id="iMileage" placeholder="e.g. 12,450 mi or 340 hrs" value="${tcS.info.mileage}" oninput="tcSi()">
       </div>
       <div class="form-group">
         <label class="form-label">General Notes (Optional)</label>
-        <textarea class="form-input" id="iNotes" placeholder="Any pre-check notes..." style="min-height:72px;resize:vertical;" oninput="tcSi()">${tctcS.info.notes}</textarea>
+        <textarea class="form-input" id="iNotes" placeholder="Any pre-check notes..." style="min-height:72px;resize:vertical;" oninput="tcSi()">${tcS.info.notes}</textarea>
       </div>
     </div></div>
     <div class="nav-buttons">
@@ -3738,7 +3755,7 @@ async function tcGoChecklist() {
   tcGetCL().forEach((sec, si) => {
     sec.items.forEach((_, ii) => {
       const key = `${si}-${ii}`;
-      if (!tcS.items[key]) tctcS.items[key] = {status:'pass', note:'', photos:[], carriedFail:false};
+      if (!tcS.items[key]) tcS.items[key] = {status:'pass', note:'', photos:[], carriedFail:false};
     });
   });
   // Fetch most recent check for this unit — carry forward any FAIL items
@@ -3746,7 +3763,7 @@ async function tcGoChecklist() {
     const { data } = await db
       .from('apparatus_checks')
       .select('checklist')
-      .eq('unit_id', tctcS.unitId)
+      .eq('unit_id', tcS.unitId)
       .order('date', { ascending: false })
       .order('time', { ascending: false })
       .limit(1)
@@ -3756,7 +3773,7 @@ async function tcGoChecklist() {
         sec.items?.forEach((item, ii) => {
           if (item.status === 'fail') {
             const key = `${si}-${ii}`;
-            tctcS.items[key] = {status:'fail', note:item.note||'', photos:[], carriedFail:true};
+            tcS.items[key] = {status:'fail', note:item.note||'', photos:[], carriedFail:true};
           }
         });
       });
@@ -3772,7 +3789,7 @@ function tcStep3() {
   return `
     <div style="margin-bottom:18px;">
       <div class="page-title">${u.name}</div>
-      <div style="font-size:13px;color:var(--text-muted);">${TC_TYPE_LABEL[u.type]} · ${tctcS.info.date} · ${tctcS.info.performer}</div>
+      <div style="font-size:13px;color:var(--text-muted);">${TC_TYPE_LABEL[u.type]} · ${tcS.info.date} · ${tcS.info.performer}</div>
     </div>
     <div class="tc-summary-stats">
       <div class="tc-stat-card"><div class="tc-stat-value">${st.total}</div><div class="tc-stat-label">Total</div></div>
@@ -3782,7 +3799,7 @@ function tcStep3() {
       <div class="tc-stat-card na"><div class="tc-stat-value" id="tc-spNA">${st.na}</div><div class="tc-stat-label">N/A</div></div>
     </div>
     <div class="tc-progress-bar-wrap"><div class="tc-progress-bar-fill" id="tc-pgBar" style="width:${pct}%"></div></div>
-    ${cl.map((sec,si)=>renderSec(sec,si)).join('')}
+    ${cl.map((sec,si)=>tcRenderSec(sec,si)).join('')}
     <div class="nav-buttons">
       <button class="btn btn-secondary" onclick="tcPrevStep()">← Back</button>
       <button class="btn btn-primary" onclick="tcGoReview()">Review & Submit →</button>
@@ -3795,14 +3812,14 @@ function tcRenderSec(sec, si) {
   return `
     <div class="tc-section-card">
       <div class="tc-section-header" onclick="tcTogSec(${si})">
-        <div class="tc-section-title"><span class="section-status-dot ${dot}" id="tc-dot-${si}"></span>${sec.title}</div>
+        <div class="tc-section-title"><span class="tc-section-status-dot ${dot}" id="tc-dot-${si}"></span>${sec.title}</div>
         <div style="display:flex;align-items:center;gap:10px;">
           <span class="tc-section-progress" id="tc-sp-${si}">${ss.checked}/${sec.items.length}</span>
           <button class="tc-collapse-btn" id="tc-cb-${si}">▼</button>
         </div>
       </div>
       <div class="tc-section-body" id="tc-sb-${si}">
-        ${sec.items.map((item,ii)=>renderItem(si,ii,item)).join('')}
+        ${sec.items.map((item,ii)=>tcRenderItem(si,ii,item)).join('')}
       </div>
     </div>`;
 }
@@ -3825,11 +3842,11 @@ function tcRenderItem(si, ii, item) {
           <button class="tc-status-btn na ${it.status==='na'?'active':''}" onclick="tcSetS('${key}','na')">N/A</button>
         </div>
       </div>
-      <div class="item-deficiency${dv}" id="tc-def-${key}">
-        <textarea class="tc-deficiency-note" placeholder="${notePlaceholder}" rows="2" onchange="saveNote('${key}',this.value)">${it.note||''}</textarea>
-        <div class="photo-upload-area">
+      <div class="tc-item-deficiency${dv}" id="tc-def-${key}">
+        <textarea class="tc-deficiency-note" placeholder="${notePlaceholder}" rows="2" onchange="tcSaveNote('${key}',this.value)">${it.note||''}</textarea>
+        <div class="tc-photo-upload-area">
           <label class="tc-photo-btn" for="tc-ph-${key}">📷 Add Photo</label>
-          <input type="file" id="tc-ph-${key}" accept="image/*" style="display:none" onchange="addPhoto('${key}',this)">
+          <input type="file" id="tc-ph-${key}" accept="image/*" style="display:none" onchange="tcAddPhoto('${key}',this)">
           <div id="tc-pv-${key}">${photos}</div>
         </div>
       </div>
@@ -3842,42 +3859,42 @@ function tcTogSec(si) {
 }
 
 function tcSetS(key, status) {
-  if (!tcS.items[key]) tctcS.items[key]={status:null,note:'',photos:[]};
-  tctcS.items[key].status=status;
+  if (!tcS.items[key]) tcS.items[key]={status:null,note:'',photos:[]};
+  tcS.items[key].status=status;
   const el=document.getElementById('tc-ci-'+key);
-  el.className='checklist-item'+(status==='pass'?' passed':status==='fail'?' failed':status==='corrected'?' corrected':'');
-  ['pass','fail','corr','na'].forEach(s=>el.querySelector('.status-btn.'+s)?.classList.toggle('active',
+  el.className='tc-checklist-item'+(status==='pass'?' passed':status==='fail'?' failed':status==='corrected'?' corrected':'');
+  ['pass','fail','corr','na'].forEach(s=>el.querySelector('.tc-status-btn.'+s)?.classList.toggle('active',
     (s==='corr'?'corrected':s)===status));
   const def=document.getElementById('tc-def-'+key);
   if(def) {
-    def.className='item-deficiency'+((status==='fail'||status==='corrected')?' visible':'');
+    def.className='tc-item-deficiency'+((status==='fail'||status==='corrected')?' visible':'');
     const ta=def.querySelector('textarea');
     if(ta) ta.placeholder = status==='corrected'?'Describe what was corrected...':'Describe the deficiency...';
   }
   tcRefreshStats(); tcRefreshDot(parseInt(key.split('-')[0]));
 }
 
-function tcSaveNote(key,val) { if(!tcS.items[key]) tctcS.items[key]={status:null,note:'',photos:[]}; tctcS.items[key].note=val; }
+function tcSaveNote(key,val) { if(!tcS.items[key]) tcS.items[key]={status:null,note:'',photos:[]}; tcS.items[key].note=val; }
 
 function tcAddPhoto(key,input) {
   const file=input.files[0]; if(!file) return;
   const r=new FileReader();
   r.onload=e=>{
-    if(!tcS.items[key]) tctcS.items[key]={status:null,note:'',photos:[]};
-    if(!tcS.items[key].photos) tctcS.items[key].photos=[];
+    if(!tcS.items[key]) tcS.items[key]={status:null,note:'',photos:[]};
+    if(!tcS.items[key].photos) tcS.items[key].photos=[];
     const idx=tcS.items[key].photos.length;
-    tctcS.items[key].photos.push(e.target.result);
+    tcS.items[key].photos.push(e.target.result);
     const pv=document.getElementById('tc-pv-'+key);
     const img=document.createElement('img');
-    img.className='photo-thumb'; img.src=e.target.result; img.title='Click to remove';
-    img.onclick=()=>rmPhoto(key,idx); pv.appendChild(img); input.value='';
+    img.className='tc-photo-thumb'; img.src=e.target.result; img.title='Click to remove';
+    img.onclick=()=>tcRmPhoto(key,idx); pv.appendChild(img); input.value='';
   };
   r.readAsDataURL(file);
 }
 
 function tcRmPhoto(key,idx) {
   if(!tcS.items[key]?.photos) return;
-  tctcS.items[key].photos.splice(idx,1);
+  tcS.items[key].photos.splice(idx,1);
   const pv=document.getElementById('tc-pv-'+key);
   if(pv) pv.innerHTML=tcS.items[key].photos.map((p,pi)=>`<img class="tc-photo-thumb" src="${p}" title="Click to remove" onclick="tcRmPhoto('${key}',${pi})">`).join('');
 }
@@ -3915,7 +3932,7 @@ function tcRefreshStats() {
 function tcRefreshDot(si) {
   const ss=tcSecStats(si), dot=document.getElementById('tc-dot-'+si), prog=document.getElementById('tc-sp-'+si);
   if(!dot) return;
-  dot.className='section-status-dot'+(ss.failed>0?' has-fails':(ss.corrected>0&&ss.failed===0&&ss.checked===ss.total)?' partial':ss.checked===ss.total?' complete':ss.checked>0?' partial':'');
+  dot.className='tc-section-status-dot'+(ss.failed>0?' has-fails':(ss.corrected>0&&ss.failed===0&&ss.checked===ss.total)?' partial':ss.checked===ss.total?' complete':ss.checked>0?' partial':'');
   if(prog) prog.textContent=`${ss.checked}/${ss.total}`;
 }
 
@@ -3938,10 +3955,10 @@ function tcStep4() {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:14px;">
         <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Unit</span><strong>${u.name}</strong></div>
         <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Type</span>${TC_TYPE_LABEL[u.type]}</div>
-        <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Date / Time</span>${tctcS.info.date} at ${tctcS.info.time}</div>
-        <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Performed By</span><strong>${tctcS.info.performer}</strong></div>
-        ${tctcS.info.mileage?`<div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Odo / Hours</span>${tctcS.info.mileage}</div>`:''}
-        ${tctcS.info.notes?`<div style="grid-column:1/-1;"><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Notes</span>${tctcS.info.notes}</div>`:''}
+        <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Date / Time</span>${tcS.info.date} at ${tcS.info.time}</div>
+        <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Performed By</span><strong>${tcS.info.performer}</strong></div>
+        ${tcS.info.mileage?`<div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Odo / Hours</span>${tcS.info.mileage}</div>`:''}
+        ${tcS.info.notes?`<div style="grid-column:1/-1;"><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px;">Notes</span>${tcS.info.notes}</div>`:''}
       </div>
     </div></div>
     <div class="tc-summary-stats">
@@ -3998,8 +4015,8 @@ function tcGetDefs() {
 // ════════════════════════════════════════════════════
 // NAV
 // ════════════════════════════════════════════════════
-function tcNextStep() { if(tctcS.step<4){tctcS.step++;tcRenderStep();} }
-function tcPrevStep() { if(tctcS.step>1){tctcS.step--;tcRenderStep();} }
+function tcNextStep() { if(tcS.step<4){tcS.step++;tcRenderStep();} }
+function tcPrevStep() { if(tcS.step>1){tcS.step--;tcRenderStep();} }
 
 // ════════════════════════════════════════════════════
 // SUBMIT
@@ -4010,7 +4027,7 @@ async function tcSubmitCheck() {
   if (!session) {
     toast('You must be logged in to submit a check.', 'error');
     goHome();
-    document.getElementById('authGate').classList.add('visible');
+    setAuthState(false, null);
     return;
   }
   const u=tcGetUnit(), st=tcGetStats(), {failed:defs, corrected:corrs}=tcGetDefs(), cl=tcGetCL();
@@ -4023,10 +4040,10 @@ async function tcSubmitCheck() {
   r+=ruler('═');
   r+=line(`Unit:         ${u.name}`);
   r+=line(`Type:         ${TC_TYPE_LABEL[u.type]}`);
-  r+=line(`Date / Time:  ${tctcS.info.date} at ${tctcS.info.time}`);
-  r+=line(`Performed By: ${tctcS.info.performer}`);
-  if(tctcS.info.mileage) r+=line(`Odo / Hours:  ${tctcS.info.mileage}`);
-  if(tctcS.info.notes)   r+=line(`Notes:        ${tctcS.info.notes}`);
+  r+=line(`Date / Time:  ${tcS.info.date} at ${tcS.info.time}`);
+  r+=line(`Performed By: ${tcS.info.performer}`);
+  if(tcS.info.mileage) r+=line(`Odo / Hours:  ${tcS.info.mileage}`);
+  if(tcS.info.notes)   r+=line(`Notes:        ${tcS.info.notes}`);
   r+='\n';
   r+=line(`RESULTS: ${st.passed} PASS  |  ${st.failed} FAIL  |  ${st.corrected} CORR  |  ${st.na} N/A`);
   r+=defs.length>0 ? line(`STATUS:  ⚠ ${defs.length} OUTSTANDING DEFICIENCY(IES) — FOLLOW-UP REQUIRED`) : line('STATUS:  ✓ ALL CLEAR');
@@ -4057,9 +4074,9 @@ async function tcSubmitCheck() {
   cl.forEach((sec,si)=>{
     r+='\n'+line(sec.title.toUpperCase());
     sec.items.forEach((item,ii)=>{
-      const key=`${si}-${ii}`, s=(tctcS.items[key]?.status||'unchecked').toUpperCase().padEnd(9);
+      const key=`${si}-${ii}`, s=(tcS.items[key]?.status||'unchecked').toUpperCase().padEnd(9);
       r+=line(`  [${s}] ${item}`);
-      if(tctcS.items[key]?.note) r+=line(`             → ${tctcS.items[key].note}`);
+      if(tcS.items[key]?.note) r+=line(`             → ${tcS.items[key].note}`);
     });
   });
   r+='\n'+ruler('═');
@@ -4084,7 +4101,7 @@ async function tcSubmitCheck() {
   }
 
   document.getElementById('tcLoadingOverlay').classList.add('visible');
-  const subj=`[QFD Check] ${u.name} — ${tctcS.info.date} — ${defs.length>0?'⚠ '+defs.length+' DEFICIENCY':corrs.length>0?'✓ CLEAR / '+corrs.length+' CORRECTED':'✓ ALL CLEAR'}`;
+  const subj=`[QFD Check] ${u.name} — ${tcS.info.date} — ${defs.length>0?'⚠ '+defs.length+' DEFICIENCY':corrs.length>0?'✓ CLEAR / '+corrs.length+' CORRECTED':'✓ ALL CLEAR'}`;
   try {
     await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {subject:subj, to_email:'Quapawfiredepartment@gmail.com', report:r});
     document.getElementById('tcLoadingOverlay').classList.remove('visible');
@@ -4261,8 +4278,18 @@ function tcTabSwitch(tab, btn) {
   if (tab==='history') tcRenderHistory();
 }
 
-function tcInit() {
+async function tcInit() {
   tcS = {step:1, unitId:null, info:{date:'',time:'',performer:'',mileage:'',notes:''}, items:{}};
+  // Pre-fill performer from logged-in session email
+  const { data:{ session } } = await sb.auth.getSession();
+  if (session?.user?.email) {
+    const email = session.user.email;
+    // Convert firstname.lastname@quapawfire.com → "Firstname Lastname"
+    const derived = email.split('@')[0].replace(/\./g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+    // Match against ROSTER (exact name match)
+    const rosterMatch = ROSTER.find(m => m.name.toLowerCase() === derived.toLowerCase());
+    tcS.info.performer = rosterMatch ? rosterMatch.name : derived;
+  }
   tcTabSwitch('new', document.getElementById('tc-tabnew'));
   tcRenderStep();
 }
