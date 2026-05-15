@@ -4553,6 +4553,13 @@ async function tcSaveToHistory(p) {
   if (error) console.warn('Supabase save error:', error.message);
 }
 
+function tcFmtDate(str) {
+  if (!str) return '—';
+  // Parse YYYY-MM-DD as local, not UTC (avoids day-shift in Central time)
+  const [y, m, d] = str.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+}
+
 async function tcRenderHistory() {
   const c = document.getElementById('tc-history-content');
   c.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text-muted);">
@@ -4595,7 +4602,7 @@ function tcRenderHistoryTable(h, isOffline) {
         <thead><tr><th>Date</th><th>Unit</th><th>Performed By</th><th>Result</th><th></th></tr></thead>
         <tbody>${h.map(x => `
           <tr>
-            <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">${x.date}<br><span style="color:var(--text-muted)">${x.time}</span></td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">${tcFmtDate(x.date)}<br><span style="color:var(--text-muted)">${x.time}</span></td>
             <td><strong>${x.unit_name||x.unitName}</strong><br><span style="font-size:11px;color:var(--text-muted);">${TC_TYPE_LABEL[x.unit_type||x.type]||''}</span></td>
             <td>${x.performer}</td>
             <td>${x.stats?.failed>0
@@ -4621,12 +4628,12 @@ async function tcViewDetail(id) {
 
   const defs = h.deficiencies || [];
   const unitName = h.unit_name || h.unitName || '';
-  document.getElementById('tcModalTitle').textContent = `${unitName} — ${h.date}`;
+  document.getElementById('tcModalTitle').textContent = `${unitName} — ${tcFmtDate(h.date)}`;
   document.getElementById('tcModalBody').innerHTML = `
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;font-size:14px;">
       <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;">Unit</span><strong>${unitName}</strong></div>
       <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;">Performed By</span>${h.performer}</div>
-      <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;">Date / Time</span>${h.date} at ${h.time}</div>
+      <div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;">Date / Time</span>${tcFmtDate(h.date)} at ${h.time}</div>
       ${h.mileage?`<div><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;">Odo / Hours</span>${h.mileage}</div>`:''}
       ${h.notes?`<div style="grid-column:1/-1;"><span style="color:var(--text-muted);font-size:10px;text-transform:uppercase;letter-spacing:1px;display:block;">Notes</span>${h.notes}</div>`:''}
     </div>
