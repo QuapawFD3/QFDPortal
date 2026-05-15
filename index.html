@@ -1030,8 +1030,8 @@ body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-
           </select>
         </div>
         <div class="htest-field">
-          <label class="htest-label">Hose Number</label>
-          <input class="htest-input" id="htHoseNum" placeholder="e.g. 101" type="text">
+          <label class="htest-label">Hose Number or Range</label>
+          <input class="htest-input" id="htHoseNum" placeholder="e.g. 101  or  100-150  or  100,102,107" type="text">
         </div>
         <div class="htest-field">
           <label class="htest-label">Test Date</label>
@@ -2851,19 +2851,42 @@ function openHoseTestModal(){
 }
 function closeHoseModal(){document.getElementById('hoseTestModal').classList.remove('visible');}
 function saveHoseTest(){
-  const num=document.getElementById('htHoseNum').value.trim();
+  const raw=document.getElementById('htHoseNum').value.trim();
   const dt=document.getElementById('htDate').value;
   const sz=document.getElementById('htSize').value;
-  if(!num){alert('Please enter a hose number.');return;}
+  if(!raw){alert('Please enter a hose number or range.');return;}
   if(!dt){alert('Please select a test date.');return;}
-  saveHoseRecord({
-    size:sz, hoseNum:num, date:dt,
+
+  // Parse: comma list ("100,102,107"), single number ("101"), or range ("100-150")
+  const rangeMatch = raw.match(/^(\d+)\s*[-–]\s*(\d+)$/);
+  let hoseNums = [];
+  if(raw.includes(',')){
+    // Comma-separated list
+    hoseNums = raw.split(',').map(s=>s.trim()).filter(s=>/^\d+$/.test(s));
+    if(!hoseNums.length){alert('No valid hose numbers found. Use format: 100,102,107');return;}
+  } else if(rangeMatch){
+    const start=parseInt(rangeMatch[1]), end=parseInt(rangeMatch[2]);
+    if(start>end){alert('Range start must be less than end.');return;}
+    if(end-start>500){alert('Range too large — max 500 hoses at once.');return;}
+    for(let i=start;i<=end;i++) hoseNums.push(String(i));
+  } else if(/^\d+$/.test(raw)){
+    hoseNums=[raw];
+  } else {
+    alert('Enter a single number (101), a range (100-150), or a list (100,102,107).');return;
+  }
+
+  const base={
+    date:dt,
+    size:sz,
     result:document.getElementById('htResult').value,
     tester:document.getElementById('htTester').value.trim(),
     psi:document.getElementById('htPsi').value,
     notes:document.getElementById('htNotes').value.trim(),
     recorded:new Date().toISOString()
-  });
+  };
+
+  hoseNums.forEach(num => saveHoseRecord({...base, hoseNum:num}));
+
   closeHoseModal();
   if(sz!==hoseSize){
     hoseSize=sz;
@@ -2873,7 +2896,10 @@ function saveHoseTest(){
   }
   renderHoseSummary();
   renderHoseTable();
-  toast(`Test recorded for Hose #${num}!`,'success');
+  const msg = hoseNums.length>1
+    ? `${hoseNums.length} records saved (Hose #${hoseNums[0]}–#${hoseNums[hoseNums.length-1]})!`
+    : `Test recorded for Hose #${hoseNums[0]}!`;
+  toast(msg,'success');
 }
 
 
@@ -4632,12 +4658,6 @@ function tcCloseModal() { document.getElementById('tcModal').classList.remove('v
 // ════════════════════════════════════════════════════
 // TOAST
 // ════════════════════════════════════════════════════
-function toast(msg, type='success') {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.className=`toast ${type} visible`;
-  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('visible'),5000);
-}
-
 // ════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════
