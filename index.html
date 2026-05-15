@@ -4201,12 +4201,12 @@ function tcRenderSec(sec, si) {
 function tcRenderItem(si, ii, item) {
   const key=`${si}-${ii}`, it=tcS.items[key]||{status:null,note:'',photos:[]};
   const cls=it.status==='pass'?' passed':it.status==='fail'?' failed':it.status==='corrected'?' corrected':'';
-  const dv=(it.status==='fail'||it.status==='corrected')?' visible':'';
+  const dv=(it.status==='fail'||it.status==='corrected'||it.status==='na')?' visible':'';
   const isCarried = it.carriedFail === true;
-  const notePlaceholder = it.status==='corrected' ? 'Describe what was corrected...' : 'Describe the deficiency...';
+  const notePlaceholder = it.status==='corrected' ? 'Describe what was corrected...' : it.status==='na' ? 'Reason for N/A (optional)...' : 'Describe the deficiency...';
   const photos=(it.photos||[]).map((p,pi)=>`<img class="tc-photo-thumb" src="${p}" title="Click to remove" onclick="tcRmPhoto('${key}',${pi})">`).join('');
   return `
-    <div class="checklist-item${cls}" id="tc-ci-${key}">
+    <div class="tc-checklist-item${cls}" id="tc-ci-${key}">
       <div class="tc-item-row">
         <div class="tc-item-text">${item}${isCarried?'<span class="tc-carry-flag">PREV FAIL</span>':''}</div>
         <div class="tc-status-buttons">
@@ -4241,9 +4241,9 @@ function tcSetS(key, status) {
     (s==='corr'?'corrected':s)===status));
   const def=document.getElementById('tc-def-'+key);
   if(def) {
-    def.className='tc-item-deficiency'+((status==='fail'||status==='corrected')?' visible':'');
+    def.className='tc-item-deficiency'+((status==='fail'||status==='corrected'||status==='na')?' visible':'');
     const ta=def.querySelector('textarea');
-    if(ta) ta.placeholder = status==='corrected'?'Describe what was corrected...':'Describe the deficiency...';
+    if(ta) ta.placeholder = status==='corrected'?'Describe what was corrected...':status==='na'?'Reason for N/A (optional)...':'Describe the deficiency...';
   }
   tcRefreshStats(); tcRefreshDot(parseInt(key.split('-')[0]));
 }
@@ -4528,7 +4528,7 @@ async function tcRenderHistory() {
     <div class="spinner" style="margin:0 auto 14px;"></div>Loading shared history...
   </div>`;
 
-  const { data, error } = await db
+  const { data, error } = await sb
     .from('apparatus_checks')
     .select('id,unit_name,unit_type,date,time,performer,mileage,stats,deficiencies,notes')
     .order('date', { ascending: false })
