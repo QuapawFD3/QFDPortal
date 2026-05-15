@@ -4158,9 +4158,9 @@ async function tcGoChecklist() {
       if (!tcS.items[key]) tcS.items[key] = {status:'pass', note:'', photos:[], carriedFail:false};
     });
   });
-  // Fetch most recent check for this unit — carry forward any FAIL items
+  // Fetch most recent check for this unit — carry forward any FAIL or N/A items
   try {
-    const { data } = await db
+    const { data } = await sb
       .from('apparatus_checks')
       .select('checklist')
       .eq('unit_id', tcS.unitId)
@@ -4171,9 +4171,14 @@ async function tcGoChecklist() {
     if (data?.checklist) {
       data.checklist.forEach((sec, si) => {
         sec.items?.forEach((item, ii) => {
-          if (item.status === 'fail') {
+          if (item.status === 'fail' || item.status === 'na') {
             const key = `${si}-${ii}`;
-            tcS.items[key] = {status:'fail', note:item.note||'', photos:[], carriedFail:true};
+            tcS.items[key] = {
+              status: item.status,
+              note: item.note || '',
+              photos: [],
+              carriedFail: item.status === 'fail',
+            };
           }
         });
       });
