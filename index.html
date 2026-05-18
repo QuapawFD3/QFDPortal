@@ -3726,9 +3726,11 @@ function recSwitchTab(tab, btn) {
   document.querySelectorAll('#view-recruit .tab-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   REC.activeTab = tab;
-  document.getElementById('recProgressContent').style.display = tab === 'progress' ? '' : 'none';
-  document.getElementById('recAllContent').style.display     = tab === 'all'      ? '' : 'none';
-  if (tab === 'all') recRenderAll();
+  document.getElementById('recTrainingContent').style.display = tab === 'training'  ? '' : 'none';
+  document.getElementById('recProgressContent').style.display = tab === 'progress'  ? '' : 'none';
+  document.getElementById('recAllContent').style.display      = tab === 'all'       ? '' : 'none';
+  if (tab === 'training') recRenderTraining();
+  if (tab === 'all')      recRenderAll();
 }
 
 async function recInit() {
@@ -3747,7 +3749,7 @@ async function recInit() {
   REC.signoffs = {};
   REC.collapsed = {};
   if (REC.selectedRecruit) await recLoadSignoffs(REC.selectedRecruit);
-  recSwitchTab('progress', document.getElementById('recTabProgress'));
+  recSwitchTab('training', document.getElementById('recTabTraining'));
   recRenderProgress();
 }
 
@@ -3759,6 +3761,150 @@ async function recLoadSignoffs(recruitName) {
       REC.signoffs[row.item_key] = { passed: row.passed, signedBy: row.signed_by, date: row.sign_date };
     });
   } catch(e) { console.warn('recLoadSignoffs:', e); }
+}
+
+// ── TRAINING MATERIAL ─────────────────────────────────────
+// To add content: add objects to the items array for any section.
+// Video: { type:'video', title:'Title', url:'https://youtu.be/...', desc:'Optional description' }
+// Photo: { type:'photo', title:'Title', url:'https://...image.jpg', desc:'Optional description' }
+// Doc:   { type:'doc',   title:'Title', url:'https://...', desc:'Optional description' }
+// Note:  { type:'note',  title:'Title', body:'Text content here' }
+
+const TRAINING_MATERIAL = {
+  apparatus: [
+    { id:'brush1',  label:'Brush 1',   icon:'🌲', items:[] },
+    { id:'brush18', label:'Brush 18',  icon:'🌲', items:[] },
+    { id:'brush20', label:'Brush 20',  icon:'🌲', items:[] },
+    { id:'brush27', label:'Brush 27',  icon:'🌲', items:[] },
+    { id:'brush28', label:'Brush 28',  icon:'🌲', items:[] },
+    { id:'eng21',   label:'Engine 21', icon:'🚒', items:[] },
+    { id:'eng22',   label:'Engine 22', icon:'🚒', items:[] },
+    { id:'res23',   label:'Rescue 23', icon:'🔧', items:[] },
+    { id:'medres',  label:'Rescue 11', icon:'💨', items:[] },
+    { id:'tank2',   label:'Tanker 2',  icon:'🚛', items:[] },
+    { id:'tank25',  label:'Tanker 25', icon:'🚛', items:[] },
+  ],
+  deptDocs:      { label:'Department Documents', icon:'📄', items:[] },
+  generalTrain:  { label:'General Training',     icon:'🎓', items:[] },
+  otherTrain:    { label:'Other Training',        icon:'📌', items:[] },
+};
+
+let _recTrainingSub = 'apparatus-brush1'; // tracks active sub-tab
+
+function recRenderTraining() {
+  const c = document.getElementById('recTrainingContent');
+
+  // Build sub-tab bar
+  const subTabs = [
+    ...TRAINING_MATERIAL.apparatus.map(a => ({ id:'apparatus-'+a.id, label:a.label, icon:a.icon })),
+    { id:'dept-docs',     label:'Dept Documents',  icon:'📄' },
+    { id:'general-train', label:'General Training', icon:'🎓' },
+    { id:'other-train',   label:'Other Training',   icon:'📌' },
+  ];
+
+  // Ensure active sub-tab is valid
+  if (!subTabs.find(t => t.id === _recTrainingSub)) _recTrainingSub = subTabs[0].id;
+
+  const subTabBar = `
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border);">
+      ${subTabs.map(t => `
+        <button onclick="recSetTrainingSub('${t.id}')" style="
+          background:${_recTrainingSub===t.id?'var(--red)':'var(--surface2)'};
+          color:${_recTrainingSub===t.id?'#fff':'var(--text-muted)'};
+          border:1px solid ${_recTrainingSub===t.id?'var(--red)':'var(--border)'};
+          border-radius:20px;padding:5px 14px;font-family:'Barlow',sans-serif;
+          font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;">
+          ${t.icon} ${t.label}
+        </button>`).join('')}
+    </div>`;
+
+  // Get current sub-tab content
+  let items = [];
+  let sectionLabel = '';
+  if (_recTrainingSub.startsWith('apparatus-')) {
+    const unitId = _recTrainingSub.replace('apparatus-','');
+    const unit = TRAINING_MATERIAL.apparatus.find(a => a.id === unitId);
+    items = unit?.items || [];
+    sectionLabel = unit?.label || '';
+  } else if (_recTrainingSub === 'dept-docs') {
+    items = TRAINING_MATERIAL.deptDocs.items;
+    sectionLabel = 'Department Documents';
+  } else if (_recTrainingSub === 'general-train') {
+    items = TRAINING_MATERIAL.generalTrain.items;
+    sectionLabel = 'General Training';
+  } else if (_recTrainingSub === 'other-train') {
+    items = TRAINING_MATERIAL.otherTrain.items;
+    sectionLabel = 'Other Training';
+  }
+
+  const contentArea = items.length === 0
+    ? `<div style="text-align:center;padding:64px 32px;color:var(--text-muted);">
+        <div style="font-size:48px;margin-bottom:14px;">📭</div>
+        <div style="font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">${sectionLabel}</div>
+        <div style="font-size:14px;">No training material added yet.<br>Videos, photos, and documents will appear here.</div>
+      </div>`
+    : `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
+        ${items.map(item => recRenderTrainingItem(item)).join('')}
+      </div>`;
+
+  c.innerHTML = subTabBar + contentArea;
+}
+
+function recSetTrainingSub(id) {
+  _recTrainingSub = id;
+  recRenderTraining();
+}
+
+function recRenderTrainingItem(item) {
+  if (item.type === 'video') {
+    // Convert youtu.be or youtube.com/watch URLs to embed format
+    let embedUrl = item.url;
+    const ytMatch = item.url.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+    if (ytMatch) embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
+    return `
+      <div class="card" style="overflow:hidden;">
+        <div style="position:relative;padding-bottom:56.25%;height:0;background:var(--bg);">
+          <iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen loading="lazy"></iframe>
+        </div>
+        <div style="padding:14px 16px;">
+          <div style="font-weight:600;font-size:14px;margin-bottom:4px;">🎬 ${item.title}</div>
+          ${item.desc?`<div style="font-size:12px;color:var(--text-muted);">${item.desc}</div>`:''}
+        </div>
+      </div>`;
+  }
+  if (item.type === 'photo') {
+    return `
+      <div class="card" style="overflow:hidden;">
+        <img src="${item.url}" style="width:100%;height:200px;object-fit:cover;display:block;" loading="lazy">
+        <div style="padding:14px 16px;">
+          <div style="font-weight:600;font-size:14px;margin-bottom:4px;">🖼 ${item.title}</div>
+          ${item.desc?`<div style="font-size:12px;color:var(--text-muted);">${item.desc}</div>`:''}
+        </div>
+      </div>`;
+  }
+  if (item.type === 'doc') {
+    return `
+      <div class="card">
+        <div style="padding:18px 20px;display:flex;align-items:center;gap:14px;">
+          <span style="font-size:32px;flex-shrink:0;">📄</span>
+          <div style="flex:1;">
+            <div style="font-weight:600;font-size:14px;margin-bottom:4px;">${item.title}</div>
+            ${item.desc?`<div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">${item.desc}</div>`:''}
+            <a href="${item.url}" target="_blank" style="color:var(--red);font-size:13px;font-weight:600;text-decoration:none;">Open Document →</a>
+          </div>
+        </div>
+      </div>`;
+  }
+  if (item.type === 'note') {
+    return `
+      <div class="card">
+        <div style="padding:18px 20px;">
+          <div style="font-weight:600;font-size:14px;margin-bottom:8px;">📝 ${item.title}</div>
+          <div style="font-size:14px;color:var(--text-muted);white-space:pre-wrap;line-height:1.6;">${item.body}</div>
+        </div>
+      </div>`;
+  }
+  return '';
 }
 
 function recRenderProgress() {
@@ -3883,7 +4029,6 @@ async function recViewRecruit(name) {
   REC.collapsed = {};
   await recLoadSignoffs(name);
   recSwitchTab('progress', document.getElementById('recTabProgress'));
-  recRenderProgress();
 }
 
 async function recSignOff(key, recruitName, si, item, section) {
@@ -4107,8 +4252,10 @@ function tcPickUnit(id) {
 // ── Step 2: Details ───────────────────────────────
 function tcStep2() {
   const now = new Date();
-  const d = tcS.info.date || now.toISOString().split('T')[0];
-  const t = tcS.info.time || now.toTimeString().slice(0,5);
+  const localDate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const localTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const d = tcS.info.date || localDate;
+  const t = tcS.info.time || localTime;
   const u = tcGetUnit();
   return `
     <div class="page-title">Check Details</div>
@@ -4770,10 +4917,12 @@ async function tcInit() {
   </div>
   <div class="module-content">
     <div class="tab-nav" style="margin-bottom:24px;">
-      <button class="tab-btn active" id="recTabProgress" onclick="recSwitchTab('progress',this)">📗 My Progress</button>
+      <button class="tab-btn active" id="recTabTraining" onclick="recSwitchTab('training',this)">📚 Training Material</button>
+      <button class="tab-btn" id="recTabProgress" onclick="recSwitchTab('progress',this)">📗 My Progress</button>
       <button class="tab-btn" id="recTabAll" onclick="recSwitchTab('all',this)">👥 All Recruits</button>
     </div>
-    <div id="recProgressContent"></div>
+    <div id="recTrainingContent"></div>
+    <div id="recProgressContent" style="display:none;"></div>
     <div id="recAllContent" style="display:none;"></div>
   </div>
 </div>
